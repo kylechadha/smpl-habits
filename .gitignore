@@ -1,0 +1,23 @@
+# Android
+*.iml
+.gradle/
+local.properties
+.idea/
+*.apk
+*.aab
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Kotlin
+*.class
+*.log
+*.jar
+
+# macOS
+.DS_Store
+
+# Secrets
+.secrets*
+*.keystore
