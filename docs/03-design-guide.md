@@ -92,16 +92,16 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 **Layout**
 ```
 +--------------------------------------------------+
-| [Habit Name] [Check]              [Pips] [2/3]   |
+| [Check] [Habit Name]              [Pips] [2/3]   |
 | [========Health Bar========]              [85%]  |
 +--------------------------------------------------+
 ```
 
 **Default state**: Name on left, weekly pips (if applicable) on right, health bar spanning full width below.
 
-**Logged state**: Green checkmark appears next to habit name (22px circle, `#10b981` background, white check icon).
+**Logged state**: Green checkmark appears to the left of habit name (22px circle, `#10b981` background, white check icon).
 
-**Drawer open state**: Content slides left 100%, revealing dark drawer with 7-day checkboxes.
+**Drawer open state**: Dark drawer slides in from the right, overlaying the habit row content.
 
 ### Progress Bar
 - Track height: 6px
@@ -175,14 +175,15 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
 ### Swipe Left (Habit Row)
 - Reveals 7-day backfill drawer
-- Content slides left, dark drawer appears
+- Dark drawer slides in from right, overlaying the row (use `flutter_slidable` package)
 - Each day shows checkbox (32px x 32px, 8px radius)
 - Today highlighted with blue accent
 - Close button (chevron right) on far right
 
 ### Long Press (Habit Row)
-- Opens edit/delete menu (implementation TBD)
-- Consider haptic feedback on Android
+- Opens edit modal (same as add habit modal, prefilled)
+- Initiates drag-to-reorder if held and moved
+- Haptic feedback on Android
 
 ### Tap FAB
 - Opens Add Habit bottom sheet
@@ -233,17 +234,17 @@ font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 - Subtle, not overwhelming
 
 ### Logged Today
-- Green checkmark appears next to habit name
+- Green checkmark appears to the left of habit name
 - Checkmark animates in with scale
 - No other visual changes to row
 
 ### Drawer Open (Backfill)
-- Dark background (`#1a1a2e`)
+- Dark drawer (`#1a1a2e`) slides in from right, overlaying the habit row
 - 7 day columns with labels (Mon-Sun)
 - Checked days: green checkbox with white check
 - Unchecked days: semi-transparent border
 - Today: blue accent color
-- Close button on right edge
+- Close button on right edge (or swipe right to dismiss)
 
 ### Weekly vs Daily Display
 **Daily habits**: No pips shown, just name + health bar
