@@ -120,27 +120,30 @@ For weekly habits, grace period = `7 / frequency_count` days (rounded up).
 
 ```dart
 double calculateHealth(Habit habit, List<Log> logs) {
-  // Sort logs by date descending
-  logs.sort((a, b) => b.loggedDate.compareTo(a.loggedDate));
-  
+  // Create a set of logged dates for O(1) lookup
+  final loggedDates = logs.map((l) => l.loggedDate).toSet();
+
   double health = 100.0;
   final today = getCurrentDay(); // Respects 2am boundary
   final gracePeriod = habit.isDaily ? 1 : (7 / habit.frequencyCount).ceil();
-  
-  // Walk back through time, calculating health changes
-  for (int daysAgo = 0; daysAgo < 90; daysAgo++) { // 90 day lookback
+  int consecutiveMisses = 0;
+
+  // Walk FORWARD through time (oldest to newest)
+  for (int daysAgo = 89; daysAgo >= 0; daysAgo--) {
     final date = today.subtract(Duration(days: daysAgo));
-    final wasLogged = logs.any((l) => l.loggedDate == date);
-    
+    final wasLogged = loggedDates.contains(date);
+
     if (wasLogged) {
-      // Recovery: inverse of decay
+      // Recovery: inverse of decay, reset consecutive misses
       health = min(MAX_HEALTH, health + recoveryAmount(health));
-    } else if (daysAgo >= gracePeriod) {
-      // Decay: accelerates on consecutive misses
+      consecutiveMisses = 0;
+    } else if (daysAgo < 90 - gracePeriod) {
+      // Only decay after grace period from start of tracking
+      consecutiveMisses++;
       health = max(MIN_HEALTH, health - decayAmount(consecutiveMisses));
     }
   }
-  
+
   return health;
 }
 
@@ -270,7 +273,7 @@ Firestore handles sync automatically:
 
 ## 5. Implementation Phases
 
-### Phase 1: Foundation (Day 1 morning)
+### Phase 1: Foundation
 
 **Goal:** Signed-in user sees empty home screen
 
@@ -285,7 +288,7 @@ Firestore handles sync automatically:
 
 **Deliverable:** Can sign in with Google, see "Habits" title and empty state
 
-### Phase 2: Core Data (Day 1 afternoon)
+### Phase 2: Core Data
 
 **Goal:** Can create habits and see them in list
 
@@ -300,7 +303,7 @@ Firestore handles sync automatically:
 
 **Deliverable:** Can add habits, they persist across app restarts
 
-### Phase 3: Logging (Day 1 evening)
+### Phase 3: Logging
 
 **Goal:** Can log habits for today and past days
 
@@ -314,7 +317,7 @@ Firestore handles sync automatically:
 
 **Deliverable:** Full logging flow works, persists to Firestore
 
-### Phase 4: Health & Polish (Day 2 morning)
+### Phase 4: Health & Polish
 
 **Goal:** Health bars show correct values, UI matches mockups
 
@@ -329,7 +332,7 @@ Firestore handles sync automatically:
 
 **Deliverable:** App is functionally complete
 
-### Phase 5: Final Polish (Day 2 afternoon)
+### Phase 5: Final Polish
 
 **Goal:** Feels good to use
 
@@ -462,9 +465,10 @@ dependencies:
   
   # State management
   flutter_riverpod: ^2.4.0
-  
+
   # UI helpers
   flutter_native_splash: ^2.3.0    # Fast app launch
+  flutter_slidable: ^3.0.0         # Swipe gestures for backfill drawer
   
 dev_dependencies:
   flutter_test:
