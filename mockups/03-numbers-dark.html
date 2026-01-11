@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=375, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>smpl-tracker - Numbers Dark Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark palette */
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #242424;
+            --bg-hover: #2a2a2a;
+
+            /* Text */
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+
+            /* Health colors */
+            --health-overflow: #8b5cf6;    /* Purple for >100% */
+            --health-excellent: #22c55e;   /* Green 80-100% */
+            --health-good: #84cc16;        /* Lime 60-79% */
+            --health-warning: #eab308;     /* Yellow 40-59% */
+            --health-danger: #f97316;      /* Orange 20-39% */
+            --health-critical: #ef4444;    /* Red <20% */
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+
+            /* Typography */
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: 'Inter', -apple-system, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: var(--space-lg);
+            gap: var(--space-xl);
+        }
+
+        /* Phone frame */
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: var(--bg-primary);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 12px #1a1a1a,
+                0 25px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        /* Status bar */
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--space-lg);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-bar .time {
+            font-family: var(--font-mono);
+        }
+
+        .status-bar .icons {
+            display: flex;
+            gap: var(--space-sm);
+            font-size: 12px;
+        }
+
+        /* Dynamic island */
+        .dynamic-island {
+            width: 126px;
+            height: 37px;
+            background: #000;
+            border-radius: 20px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Main content */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 var(--space-lg) var(--space-2xl);
+        }
+
+        /* Header */
+        .header {
+            padding: var(--space-md) 0 var(--space-xl);
+        }
+
+        .header h1 {
+            font-family: var(--font-mono);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header .date {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: var(--space-xs);
+        }
+
+        /* Habit list */
+        .habit-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        /* Habit card */
+        .habit-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .habit-card:hover {
+            background: var(--bg-hover);
+        }
+
+        .habit-card.logged {
+            opacity: 0.6;
+        }
+
+        .habit-card.logged .percentage {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+        }
+
+        /* Swipe hint */
+        .swipe-hint {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--health-excellent);
+            opacity: 0.4;
+            transition: width 0.2s ease, opacity 0.2s ease;
+        }
+
+        .habit-card:active .swipe-hint {
+            width: 60px;
+            opacity: 0.8;
+        }
+
+        .habit-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .habit-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .habit-frequency {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .percentage {
+            font-family: var(--font-mono);
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: -2px;
+        }
+
+        /* Health color classes */
+        .health-overflow { color: var(--health-overflow); }
+        .health-excellent { color: var(--health-excellent); }
+        .health-good { color: var(--health-good); }
+        .health-warning { color: var(--health-warning); }
+        .health-danger { color: var(--health-danger); }
+        .health-critical { color: var(--health-critical); }
+
+        /* Overflow glow effect */
+        .health-overflow {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        /* FAB */
+        .fab {
+            position: absolute;
+            bottom: 40px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            background: var(--text-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.3),
+                0 8px 24px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.05);
+            box-shadow:
+                0 6px 16px rgba(0, 0, 0, 0.4),
+                0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .fab svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--bg-primary);
+            stroke-width: 2.5px;
+        }
+
+        /* Swipe instruction */
+        .swipe-instruction {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-lg) 0;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .swipe-instruction svg {
+            width: 16px;
+            height: 16px;
+            stroke: var(--text-muted);
+            animation: swipeHint 2s ease-in-out infinite;
+        }
+
+        @keyframes swipeHint {
+            0%, 100% { transform: translateX(0); opacity: 0.5; }
+            50% { transform: translateX(8px); opacity: 1; }
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-2xl) var(--space-lg);
+            text-align: center;
+            height: 400px;
+        }
+
+        .empty-state .icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-tertiary);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-lg);
+        }
+
+        .empty-state .icon svg {
+            width: 36px;
+            height: 36px;
+            stroke: var(--text-muted);
+            stroke-width: 1.5px;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            max-width: 240px;
+        }
+
+        .empty-state .add-btn {
+            margin-top: var(--space-xl);
+            padding: var(--space-md) var(--space-xl);
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .empty-state .add-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* Labels */
+        .screen-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            margin-top: var(--space-md);
+        }
+
+        /* Legend */
+        .legend {
+            margin-top: var(--space-xl);
+            padding: var(--space-lg);
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        .legend-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--space-md);
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-family: var(--font-mono);
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.overflow { background: var(--health-overflow); }
+        .legend-dot.excellent { background: var(--health-excellent); }
+        .legend-dot.warning { background: var(--health-warning); }
+        .legend-dot.critical { background: var(--health-critical); }
+    </style>
+</head>
+<body>
+    <!-- Main screen with habits -->
+    <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="icons">
+                <span>LTE</span>
+                <span>100%</span>
+            </span>
+        </div>
+
+        <div class="content">
+            <div class="header">
+                <h1>smpl</h1>
+                <div class="date">SAT JAN 11</div>
+            </div>
+
+            <div class="habit-list">
+                <!-- Overflow state (>100%) - Purple -->
+                <div class="habit-card">
+                    <div class="swipe-hint" style="background: var(--health-overflow);"></div>
+                    <div class="habit-info">
+                        <div class="habit-name">Morning meditation</div>
+                        <div class="habit-frequency">Daily</div>
+                    </div>
+                    <div class="percentage health-overflow">120%</div>
+                </div>
+
+                <!-- Excellent health (80-100%) - Green -->
+                <div class="habit-card">
+                    <div class="swipe-hint" style="background: var(--health-excellent);"></div>
+                    <div class="habit-info">
+                        <div class="habit-name">Read 30 minutes</div>
+                        <div class="habit-frequency">Daily</div>
+                    </div>
+                    <div class="percentage health-excellent">85%</div>
+                </div>
+
+                <!-- Warning state (40-59%) - Yellow -->
+                <div class="habit-card">
+                    <div class="swipe-hint" style="background: var(--health-warning);"></div>
+                    <div class="habit-info">
+                        <div class="habit-name">Exercise</div>
+                        <div class="habit-frequency">3x / week</div>
+                    </div>
+                    <div class="percentage health-warning">45%</div>
+                </div>
+
+                <!-- Critical state (<20%) - Red -->
+                <div class="habit-card">
+                    <div class="swipe-hint" style="background: var(--health-critical);"></div>
+                    <div class="habit-info">
+                        <div class="habit-name">Practice guitar</div>
+                        <div class="habit-frequency">Daily</div>
+                    </div>
+                    <div class="percentage health-critical">10%</div>
+                </div>
+
+                <!-- Logged state example -->
+                <div class="habit-card logged">
+                    <div class="swipe-hint" style="background: var(--health-excellent); opacity: 0.2;"></div>
+                    <div class="habit-info">
+                        <div class="habit-name">Journal</div>
+                        <div class="habit-frequency">Daily</div>
+                    </div>
+                    <div class="percentage health-excellent">92%</div>
+                </div>
+            </div>
+
+            <div class="swipe-instruction">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Swipe right to log</span>
+            </div>
+
+            <div class="legend">
+                <div class="legend-title">Health Scale</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-dot overflow"></div>
+                        <span class="health-overflow">>100%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot excellent"></div>
+                        <span class="health-excellent">80-100%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot warning"></div>
+                        <span class="health-warning">40-59%</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot critical"></div>
+                        <span class="health-critical"><20%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="screen-label">Home - With Habits</div>
+    </div>
+
+    <!-- Empty state screen -->
+    <div class="phone">
+        <div class="dynamic-island"></div>
+        <div class="status-bar">
+            <span class="time">9:41</span>
+            <span class="icons">
+                <span>LTE</span>
+                <span>100%</span>
+            </span>
+        </div>
+
+        <div class="content">
+            <div class="header">
+                <h1>smpl</h1>
+                <div class="date">SAT JAN 11</div>
+            </div>
+
+            <div class="empty-state">
+                <div class="icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 11v6M9 14h6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2>No habits yet</h2>
+                <p>Add your first habit to start tracking. New habits begin at 100% health.</p>
+                <button class="add-btn">Add first habit</button>
+            </div>
+        </div>
+
+        <div class="screen-label">Empty State</div>
+    </div>
+</body>
+</html>

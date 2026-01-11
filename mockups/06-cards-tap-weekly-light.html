@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Cards + Tap Anywhere + Weekly Progress (Light)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Light theme palette */
+      --color-bg: #F5F5F7;
+      --color-surface: #FFFFFF;
+      --color-text-primary: #1D1D1F;
+      --color-text-secondary: #6E6E73;
+      --color-text-tertiary: #AEAEB2;
+      --color-border: #E5E5EA;
+
+      /* Accent - Vibrant blue for FAB and interactive elements */
+      --color-accent: #007AFF;
+      --color-accent-dark: #0056CC;
+
+      /* Health state colors - subtle and refined */
+      --color-health-excellent: #34C759;
+      --color-health-excellent-bg: rgba(52, 199, 89, 0.08);
+      --color-health-excellent-border: rgba(52, 199, 89, 0.2);
+
+      --color-health-good: #34C759;
+      --color-health-good-bg: rgba(52, 199, 89, 0.05);
+      --color-health-good-border: rgba(52, 199, 89, 0.12);
+
+      --color-health-warning: #FF9500;
+      --color-health-warning-bg: rgba(255, 149, 0, 0.06);
+      --color-health-warning-border: rgba(255, 149, 0, 0.15);
+
+      --color-health-critical: #FF3B30;
+      --color-health-critical-bg: rgba(255, 59, 48, 0.06);
+      --color-health-critical-border: rgba(255, 59, 48, 0.15);
+
+      /* Logged state */
+      --color-logged-bg: rgba(52, 199, 89, 0.1);
+      --color-logged-border: rgba(52, 199, 89, 0.25);
+      --color-logged-check: #34C759;
+
+      /* Spacing scale */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-size-xs: 11px;
+      --font-size-sm: 13px;
+      --font-size-base: 15px;
+      --font-size-lg: 17px;
+      --font-size-xl: 22px;
+      --font-size-2xl: 34px;
+
+      /* Shadows - subtle and layered */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.06);
+      --shadow-fab: 0 6px 20px rgba(0, 122, 255, 0.35), 0 2px 6px rgba(0, 0, 0, 0.08);
+
+      /* Border radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-full: 9999px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: #E8E8ED;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-xl) var(--space-md);
+      gap: var(--space-xl);
+    }
+
+    /* ============================================
+       PHONE FRAME
+       ============================================ */
+    .phone-frame {
+      width: 375px;
+      min-height: 720px;
+      background: var(--color-bg);
+      border-radius: 44px;
+      box-shadow: var(--shadow-lg), 0 0 0 10px #1A1A1A, 0 0 0 12px #3A3A3C;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 28px;
+      background: #1A1A1A;
+      border-radius: 14px;
+      z-index: 10;
+    }
+
+    .screen {
+      padding-top: 56px;
+      min-height: 720px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      padding: var(--space-lg) var(--space-lg) var(--space-md);
+    }
+
+    .header-greeting {
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: var(--color-text-tertiary);
+      margin-bottom: var(--space-xs);
+    }
+
+    .header-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-xs);
+    }
+
+    /* ============================================
+       HABIT LIST
+       ============================================ */
+    .habit-list {
+      flex: 1;
+      padding: var(--space-sm) var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    /* ============================================
+       HABIT CARD - Tap Anywhere to Log
+       ============================================ */
+    .habit-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .habit-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+
+    .habit-card:active {
+      transform: scale(0.98);
+    }
+
+    /* Health state backgrounds - subtle tints */
+    .habit-card.health-excellent {
+      background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-health-excellent-bg) 100%);
+      border-color: var(--color-health-excellent-border);
+    }
+
+    .habit-card.health-good {
+      background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-health-good-bg) 100%);
+      border-color: var(--color-health-good-border);
+    }
+
+    .habit-card.health-warning {
+      background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-health-warning-bg) 100%);
+      border-color: var(--color-health-warning-border);
+    }
+
+    .habit-card.health-critical {
+      background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-health-critical-bg) 100%);
+      border-color: var(--color-health-critical-border);
+    }
+
+    /* Logged state - clear visual confirmation */
+    .habit-card.logged {
+      background: var(--color-logged-bg);
+      border-color: var(--color-logged-border);
+    }
+
+    .habit-card.logged::after {
+      content: '';
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      width: 24px;
+      height: 24px;
+      background: var(--color-logged-check);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .habit-card.logged .logged-check {
+      position: absolute;
+      top: var(--space-md);
+      right: var(--space-md);
+      width: 24px;
+      height: 24px;
+      background: var(--color-logged-check);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .habit-card.logged .logged-check svg {
+      width: 14px;
+      height: 14px;
+      color: white;
+    }
+
+    /* Pulse animation for logging feedback */
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: var(--shadow-sm);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: var(--shadow-md);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: var(--shadow-sm);
+      }
+    }
+
+    .habit-card.animating {
+      animation: pulse 0.3s ease;
+    }
+
+    /* Card content layout */
+    .habit-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-sm);
+    }
+
+    .habit-name {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      line-height: 1.3;
+      flex: 1;
+      padding-right: var(--space-md);
+    }
+
+    .habit-health {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      padding: var(--space-xs) var(--space-sm);
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+    }
+
+    .habit-health.excellent {
+      color: var(--color-health-excellent);
+      background: var(--color-health-excellent-bg);
+    }
+
+    .habit-health.good {
+      color: var(--color-health-good);
+      background: var(--color-health-good-bg);
+    }
+
+    .habit-health.warning {
+      color: var(--color-health-warning);
+      background: var(--color-health-warning-bg);
+    }
+
+    .habit-health.critical {
+      color: var(--color-health-critical);
+      background: var(--color-health-critical-bg);
+    }
+
+    /* Card bottom row - frequency and weekly progress */
+    .habit-card-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .habit-frequency {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+    }
+
+    /* ============================================
+       WEEKLY PROGRESS DOTS
+       ============================================ */
+    .weekly-progress {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+    }
+
+    .weekly-progress-label {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      margin-right: var(--space-xs);
+    }
+
+    .weekly-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-border);
+      transition: all 0.2s ease;
+    }
+
+    .weekly-dot.filled {
+      background: var(--color-health-excellent);
+    }
+
+    .weekly-dot.current {
+      background: var(--color-accent);
+      box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+    }
+
+    /* ============================================
+       LONG PRESS HINT
+       ============================================ */
+    .long-press-hint {
+      text-align: center;
+      padding: var(--space-md) var(--space-lg);
+      margin-top: auto;
+    }
+
+    .long-press-hint p {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* ============================================
+       FAB (FLOATING ACTION BUTTON)
+       ============================================ */
+    .fab {
+      position: absolute;
+      bottom: var(--space-xl);
+      right: var(--space-lg);
+      width: 56px;
+      height: 56px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-fab);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+    }
+
+    .fab:hover {
+      background: var(--color-accent-dark);
+      transform: scale(1.05);
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2xl);
+      text-align: center;
+    }
+
+    .empty-state-illustration {
+      width: 120px;
+      height: 120px;
+      margin-bottom: var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state-illustration svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .empty-state-title {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .empty-state-text {
+      font-size: var(--font-size-base);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 280px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .empty-state-button {
+      padding: var(--space-md) var(--space-xl);
+      background: var(--color-accent);
+      color: white;
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-fab);
+    }
+
+    .empty-state-button:hover {
+      background: var(--color-accent-dark);
+      transform: translateY(-1px);
+    }
+
+    .empty-state-button:active {
+      transform: translateY(0);
+    }
+
+    /* ============================================
+       SECTION LABELS (for mockup presentation)
+       ============================================ */
+    .mockup-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: #666;
+      text-align: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ============================================
+       ANNOTATIONS
+       ============================================ */
+    .annotations {
+      width: 375px;
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .annotations h3 {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .annotations ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+
+    .annotations li {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      padding-left: var(--space-lg);
+      position: relative;
+    }
+
+    .annotations li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 8px;
+      height: 8px;
+      background: var(--color-accent);
+      border-radius: 50%;
+    }
+
+    .annotations li strong {
+      color: var(--color-text-primary);
+    }
+
+    /* Health state indicators in annotations */
+    .health-swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      margin-right: var(--space-xs);
+      vertical-align: middle;
+    }
+
+    .health-swatch.excellent {
+      background: linear-gradient(135deg, #fff 0%, var(--color-health-excellent-bg) 100%);
+      border: 1px solid var(--color-health-excellent-border);
+    }
+    .health-swatch.good {
+      background: linear-gradient(135deg, #fff 0%, var(--color-health-good-bg) 100%);
+      border: 1px solid var(--color-health-good-border);
+    }
+    .health-swatch.warning {
+      background: linear-gradient(135deg, #fff 0%, var(--color-health-warning-bg) 100%);
+      border: 1px solid var(--color-health-warning-border);
+    }
+    .health-swatch.critical {
+      background: linear-gradient(135deg, #fff 0%, var(--color-health-critical-bg) 100%);
+      border: 1px solid var(--color-health-critical-border);
+    }
+
+    /* Interaction demo styles */
+    .interaction-demo {
+      margin-top: var(--space-lg);
+      padding-top: var(--space-lg);
+      border-top: 1px solid var(--color-border);
+    }
+
+    .interaction-demo h4 {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .interaction-demo p {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       MAIN STATE - Home with habits at various health levels
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Home Screen - Habits at Different Health Levels</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-greeting">Saturday, January 11</div>
+          <h1 class="header-title">Today</h1>
+          <p class="header-subtitle">Tap any habit to log</p>
+        </header>
+
+        <div class="habit-list">
+
+          <!-- Overflow state (120%) - Logged today, banked extra -->
+          <div class="habit-card health-excellent logged">
+            <div class="logged-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card-top">
+              <span class="habit-name">Morning run</span>
+              <span class="habit-health excellent">120%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">Daily</span>
+            </div>
+          </div>
+
+          <!-- Good state (80%) - Healthy, not logged today -->
+          <div class="habit-card health-good">
+            <div class="habit-card-top">
+              <span class="habit-name">Read for 30 min</span>
+              <span class="habit-health good">80%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">Daily</span>
+            </div>
+          </div>
+
+          <!-- Warning state (40%) - Needs attention, weekly habit -->
+          <div class="habit-card health-warning">
+            <div class="habit-card-top">
+              <span class="habit-name">Meditate</span>
+              <span class="habit-health warning">40%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">3x per week</span>
+              <div class="weekly-progress">
+                <span class="weekly-progress-label">This week</span>
+                <span class="weekly-dot filled"></span>
+                <span class="weekly-dot"></span>
+                <span class="weekly-dot"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Critical state (10%) - About to fail, weekly habit -->
+          <div class="habit-card health-critical">
+            <div class="habit-card-top">
+              <span class="habit-name">Practice guitar</span>
+              <span class="habit-health critical">10%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">2x per week</span>
+              <div class="weekly-progress">
+                <span class="weekly-progress-label">This week</span>
+                <span class="weekly-dot"></span>
+                <span class="weekly-dot"></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="long-press-hint">
+          <p>Long-press any habit to edit or delete</p>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       LOGGED STATE - Multiple habits logged today
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">After Logging - Visual Confirmation</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-greeting">Saturday, January 11</div>
+          <h1 class="header-title">Today</h1>
+          <p class="header-subtitle">3 of 4 completed</p>
+        </header>
+
+        <div class="habit-list">
+
+          <!-- Logged - overflow -->
+          <div class="habit-card logged">
+            <div class="logged-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card-top">
+              <span class="habit-name">Morning run</span>
+              <span class="habit-health excellent">120%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">Daily</span>
+            </div>
+          </div>
+
+          <!-- Logged - was good, now better -->
+          <div class="habit-card logged">
+            <div class="logged-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card-top">
+              <span class="habit-name">Read for 30 min</span>
+              <span class="habit-health good">85%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">Daily</span>
+            </div>
+          </div>
+
+          <!-- Logged - weekly habit, 2/3 done -->
+          <div class="habit-card logged">
+            <div class="logged-check">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card-top">
+              <span class="habit-name">Meditate</span>
+              <span class="habit-health warning">45%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">3x per week</span>
+              <div class="weekly-progress">
+                <span class="weekly-progress-label">This week</span>
+                <span class="weekly-dot filled"></span>
+                <span class="weekly-dot filled"></span>
+                <span class="weekly-dot"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Not logged yet - still critical -->
+          <div class="habit-card health-critical">
+            <div class="habit-card-top">
+              <span class="habit-name">Practice guitar</span>
+              <span class="habit-health critical">10%</span>
+            </div>
+            <div class="habit-card-bottom">
+              <span class="habit-frequency">2x per week</span>
+              <div class="weekly-progress">
+                <span class="weekly-progress-label">This week</span>
+                <span class="weekly-dot"></span>
+                <span class="weekly-dot"></span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="long-press-hint">
+          <p>Long-press any habit to edit or delete</p>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       EMPTY STATE
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Empty State - New User</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-greeting">Saturday, January 11</div>
+          <h1 class="header-title">Today</h1>
+        </header>
+
+        <div class="empty-state">
+          <div class="empty-state-illustration">
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Stylized plant/growth illustration -->
+              <circle cx="60" cy="60" r="56" fill="#F5F5F7" stroke="#E5E5EA" stroke-width="2"/>
+              <path d="M60 85V50" stroke="#34C759" stroke-width="3" stroke-linecap="round"/>
+              <path d="M60 65C60 65 45 60 45 50C45 40 55 38 60 45" stroke="#34C759" stroke-width="3" stroke-linecap="round" fill="none"/>
+              <path d="M60 55C60 55 75 52 78 42C81 32 70 28 60 38" stroke="#34C759" stroke-width="3" stroke-linecap="round" fill="none"/>
+              <circle cx="60" cy="90" r="8" fill="#E5E5EA"/>
+              <circle cx="60" cy="90" r="5" fill="#AEAEB2"/>
+            </svg>
+          </div>
+          <h2 class="empty-state-title">Build better habits</h2>
+          <p class="empty-state-text">Add your first habit. New habits start at 100% health and decay when you miss targets.</p>
+          <button class="empty-state-button">Add your first habit</button>
+        </div>
+
+        <!-- FAB (still shown for consistency) -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       DESIGN ANNOTATIONS
+       ========================================== -->
+  <div class="annotations">
+    <h3>Design Notes</h3>
+    <ul>
+      <li>
+        <strong>Tap Anywhere to Log:</strong> The entire card is tappable. Card briefly pulses on tap for haptic-like feedback. Tap again to undo.
+      </li>
+      <li>
+        <strong>Health-Based Card Tinting:</strong><br>
+        <span class="health-swatch excellent"></span>Excellent (100%+): Subtle green tint<br>
+        <span class="health-swatch good"></span>Good (60-99%): Light green tint<br>
+        <span class="health-swatch warning"></span>Warning (30-59%): Amber/orange tint<br>
+        <span class="health-swatch critical"></span>Critical (0-29%): Red tint
+      </li>
+      <li>
+        <strong>Logged State:</strong> Green background with checkmark badge in top-right corner. Clear visual distinction from unlogged habits.
+      </li>
+      <li>
+        <strong>Weekly Progress Dots:</strong> For X/week habits, dots show progress this week. Filled = completed, empty = remaining.
+      </li>
+      <li>
+        <strong>Health Percentage:</strong> Small badge showing exact health %. Color-coded to match state.
+      </li>
+      <li>
+        <strong>Long-Press for Edit:</strong> Hint at bottom reminds users they can long-press to access edit/delete.
+      </li>
+      <li>
+        <strong>Typography:</strong> Inter font. 34px title, 17px habit names, 13px metadata.
+      </li>
+      <li>
+        <strong>FAB:</strong> Vibrant blue with prominent shadow. Always visible for adding new habits.
+      </li>
+    </ul>
+
+    <div class="interaction-demo">
+      <h4>Interaction Flow</h4>
+      <p>
+        1. User sees habits sorted by manual order<br>
+        2. Tap any card to log for today (pulse animation)<br>
+        3. Card changes to logged state (green background + checkmark)<br>
+        4. Health % increases, weekly dots update if applicable<br>
+        5. Tap logged card again to undo<br>
+        6. Long-press any card to edit name, frequency, or delete
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>
