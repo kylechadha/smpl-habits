@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Circular Gauges Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Health colors - warm gradient */
+      --health-critical: #E53935;
+      --health-low: #FF7043;
+      --health-medium: #FFB300;
+      --health-good: #66BB6A;
+      --health-overflow: #26A69A;
+
+      /* UI colors */
+      --bg-primary: #FFF8F5;
+      --bg-card: #FFFFFF;
+      --text-primary: #2D2D2D;
+      --text-secondary: #6B6B6B;
+      --text-muted: #A0A0A0;
+      --border-light: #F0E8E4;
+      --shadow-soft: rgba(45, 45, 45, 0.08);
+      --shadow-medium: rgba(45, 45, 45, 0.12);
+
+      /* Accent */
+      --accent-primary: #FF6B35;
+      --accent-secondary: #FF8F65;
+    }
+
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 0;
+    }
+
+    .phone-frame {
+      width: 375px;
+      min-height: 700px;
+      background: var(--bg-primary);
+      border-radius: 40px;
+      box-shadow:
+        0 4px 24px var(--shadow-medium),
+        0 0 0 12px #2D2D2D,
+        0 0 0 14px #1a1a1a;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .notch {
+      width: 150px;
+      height: 30px;
+      background: #2D2D2D;
+      border-radius: 0 0 20px 20px;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 44px;
+      padding: 0 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding-bottom: 4px;
+    }
+
+    .status-bar span {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .screen {
+      padding: 0 20px 100px;
+      min-height: calc(100% - 44px);
+    }
+
+    /* Header */
+    .header {
+      padding: 24px 0 20px;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* Habit Cards */
+    .habits-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .habit-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow:
+        0 2px 8px var(--shadow-soft),
+        0 4px 16px var(--shadow-soft);
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .habit-card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 12px var(--shadow-medium),
+        0 8px 24px var(--shadow-soft);
+    }
+
+    .habit-card:active {
+      transform: scale(0.98);
+    }
+
+    .habit-card.logged {
+      background: linear-gradient(135deg, #F0FFF4 0%, #E8F5E9 100%);
+    }
+
+    .habit-card.logged::after {
+      content: '';
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 24px;
+      height: 24px;
+      background: var(--health-good);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .habit-card.logged::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      width: 6px;
+      height: 10px;
+      border: solid white;
+      border-width: 0 2.5px 2.5px 0;
+      transform: rotate(45deg);
+      z-index: 1;
+    }
+
+    /* Circular Gauge */
+    .gauge-container {
+      width: 64px;
+      height: 64px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--border-light);
+      stroke-width: 6;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    .gauge-overflow-ring {
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 3 6;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      opacity: 0.6;
+    }
+
+    .gauge-percentage {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .gauge-percentage.overflow {
+      font-size: 13px;
+    }
+
+    /* Habit Info */
+    .habit-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .habit-frequency {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .habit-status {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 6px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-block;
+    }
+
+    .habit-status.critical {
+      background: #FFEBEE;
+      color: var(--health-critical);
+    }
+
+    .habit-status.low {
+      background: #FFF3E0;
+      color: #E65100;
+    }
+
+    .habit-status.good {
+      background: #E8F5E9;
+      color: #2E7D32;
+    }
+
+    .habit-status.overflow {
+      background: #E0F2F1;
+      color: #00796B;
+    }
+
+    /* Tap hint */
+    .tap-hint {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .habit-card:hover .tap-hint {
+      opacity: 1;
+    }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: 32px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 4px 16px rgba(255, 107, 53, 0.4),
+        0 8px 32px rgba(255, 107, 53, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fab:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 6px 20px rgba(255, 107, 53, 0.5),
+        0 12px 40px rgba(255, 107, 53, 0.3);
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+
+    .fab svg {
+      width: 28px;
+      height: 28px;
+      stroke: white;
+      stroke-width: 2.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .empty-state.visible {
+      display: flex;
+    }
+
+    .empty-illustration {
+      width: 160px;
+      height: 160px;
+      background: linear-gradient(135deg, #FFE0D6 0%, #FFD0C0 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .empty-illustration svg {
+      width: 80px;
+      height: 80px;
+      stroke: var(--accent-primary);
+      stroke-width: 1.5;
+    }
+
+    .empty-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .empty-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .empty-cta {
+      margin-top: 32px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.3);
+      transition: transform 0.2s ease;
+    }
+
+    .empty-cta:hover {
+      transform: translateY(-2px);
+    }
+
+    /* View Toggle */
+    .view-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .view-toggle button {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .view-toggle button.active {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .view-toggle button:not(.active) {
+      background: var(--bg-card);
+      color: var(--text-secondary);
+    }
+
+    /* Screen containers */
+    .screen-home,
+    .screen-empty {
+      display: none;
+    }
+
+    .screen-home.active,
+    .screen-empty.active {
+      display: block;
+    }
+
+    /* Pulse animation for overflow */
+    @keyframes pulse-glow {
+      0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(38, 166, 154, 0.4));
+      }
+      50% {
+        filter: drop-shadow(0 0 12px rgba(38, 166, 154, 0.6));
+      }
+    }
+
+    .gauge-container.overflow svg {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    /* Legend section */
+    .legend {
+      margin-top: 32px;
+      padding: 20px;
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px var(--shadow-soft);
+    }
+
+    .legend-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.critical { background: var(--health-critical); }
+    .legend-dot.low { background: var(--health-low); }
+    .legend-dot.medium { background: var(--health-medium); }
+    .legend-dot.good { background: var(--health-good); }
+    .legend-dot.overflow { background: var(--health-overflow); }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="notch"></div>
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>100%</span>
+    </div>
+
+    <div class="screen">
+      <!-- View Toggle -->
+      <div class="view-toggle">
+        <button class="active" onclick="showView('home')">With Habits</button>
+        <button onclick="showView('empty')">Empty State</button>
+      </div>
+
+      <!-- Home Screen with Habits -->
+      <div class="screen-home active">
+        <div class="header">
+          <h1>Today</h1>
+          <p class="header-subtitle">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habits-list">
+          <!-- Overflow habit (120%) - Extra healthy -->
+          <div class="habit-card logged" onclick="toggleHabit(this)">
+            <div class="gauge-container overflow">
+              <svg viewBox="0 0 64 64">
+                <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+                <circle class="gauge-fill" cx="32" cy="32" r="26"
+                  stroke="var(--health-overflow)"
+                  stroke-dasharray="163.36"
+                  stroke-dashoffset="0"/>
+                <circle class="gauge-overflow-ring" cx="32" cy="32" r="20"
+                  stroke="var(--health-overflow)"
+                  stroke-dasharray="125.66"
+                  stroke-dashoffset="100"/>
+              </svg>
+              <span class="gauge-percentage overflow">120%</span>
+            </div>
+            <div class="habit-info">
+              <div class="habit-name">Morning Run</div>
+              <div class="habit-frequency">Daily</div>
+              <span class="habit-status overflow">Banked buffer</span>
+            </div>
+            <span class="tap-hint">tap to undo</span>
+          </div>
+
+          <!-- Good habit (85%) -->
+          <div class="habit-card" onclick="toggleHabit(this)">
+            <div class="gauge-container">
+              <svg viewBox="0 0 64 64">
+                <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+                <circle class="gauge-fill" cx="32" cy="32" r="26"
+                  stroke="var(--health-good)"
+                  stroke-dasharray="163.36"
+                  stroke-dashoffset="24.5"/>
+              </svg>
+              <span class="gauge-percentage">85%</span>
+            </div>
+            <div class="habit-info">
+              <div class="habit-name">Read 20 Pages</div>
+              <div class="habit-frequency">Daily</div>
+              <span class="habit-status good">On track</span>
+            </div>
+            <span class="tap-hint">tap to log</span>
+          </div>
+
+          <!-- Medium habit (45%) -->
+          <div class="habit-card" onclick="toggleHabit(this)">
+            <div class="gauge-container">
+              <svg viewBox="0 0 64 64">
+                <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+                <circle class="gauge-fill" cx="32" cy="32" r="26"
+                  stroke="var(--health-low)"
+                  stroke-dasharray="163.36"
+                  stroke-dashoffset="89.85"/>
+              </svg>
+              <span class="gauge-percentage">45%</span>
+            </div>
+            <div class="habit-info">
+              <div class="habit-name">Meditate</div>
+              <div class="habit-frequency">3x per week</div>
+              <span class="habit-status low">Needs attention</span>
+            </div>
+            <span class="tap-hint">tap to log</span>
+          </div>
+
+          <!-- Critical habit (10%) -->
+          <div class="habit-card" onclick="toggleHabit(this)">
+            <div class="gauge-container">
+              <svg viewBox="0 0 64 64">
+                <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+                <circle class="gauge-fill" cx="32" cy="32" r="26"
+                  stroke="var(--health-critical)"
+                  stroke-dasharray="163.36"
+                  stroke-dashoffset="147.02"/>
+              </svg>
+              <span class="gauge-percentage">10%</span>
+            </div>
+            <div class="habit-info">
+              <div class="habit-name">Call Mom</div>
+              <div class="habit-frequency">Weekly</div>
+              <span class="habit-status critical">Critical</span>
+            </div>
+            <span class="tap-hint">tap to log</span>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+          <div class="legend-title">Health Levels</div>
+          <div class="legend-items">
+            <div class="legend-item">
+              <div class="legend-dot overflow"></div>
+              <span>100%+ Buffer</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot good"></div>
+              <span>70-100%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot medium"></div>
+              <span>40-70%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot low"></div>
+              <span>20-40%</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot critical"></div>
+              <span>0-20%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="screen-empty">
+        <div class="header">
+          <h1>Today</h1>
+          <p class="header-subtitle">Saturday, Jan 11</p>
+        </div>
+
+        <div class="empty-state visible">
+          <div class="empty-illustration">
+            <svg viewBox="0 0 80 80" fill="none">
+              <circle cx="40" cy="35" r="20" stroke="currentColor" stroke-width="2"/>
+              <path d="M30 35 L37 42 L50 28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M25 58 Q40 68 55 58" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">No habits yet</h2>
+          <p class="empty-subtitle">Start building better routines by adding your first habit.</p>
+          <button class="empty-cta">Add Your First Habit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <div class="fab">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    // Toggle between views
+    function showView(view) {
+      const buttons = document.querySelectorAll('.view-toggle button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelector('.screen-home').classList.toggle('active', view === 'home');
+      document.querySelector('.screen-empty').classList.toggle('active', view === 'empty');
+    }
+
+    // Toggle habit logged state
+    function toggleHabit(card) {
+      card.classList.toggle('logged');
+      const hint = card.querySelector('.tap-hint');
+      if (card.classList.contains('logged')) {
+        hint.textContent = 'tap to undo';
+      } else {
+        hint.textContent = 'tap to log';
+      }
+    }
+  </script>
+</body>
+</html>

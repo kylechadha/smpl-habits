@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Soft & Rounded Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Soft Pastel Palette */
+      --lavender: #E8E0F0;
+      --lavender-deep: #C9B8DB;
+      --lavender-text: #7B6B8D;
+      --mint: #D4F0E7;
+      --mint-deep: #A8DCC8;
+      --mint-text: #4A9C7D;
+      --peach: #FFE5D9;
+      --peach-deep: #FFCAB8;
+      --peach-text: #D97B5C;
+      --sky: #DBE9F7;
+      --sky-deep: #B3D4F0;
+      --sky-text: #5B8DC2;
+
+      /* Health Colors - Softened */
+      --health-blue: #7EB3E8;
+      --health-blue-light: #B8D4F0;
+      --health-green: #7DD3B8;
+      --health-green-light: #B8E8D8;
+      --health-yellow: #F5D67A;
+      --health-yellow-light: #FFF0C4;
+      --health-red: #F0A8A8;
+      --health-red-light: #FFD4D4;
+
+      /* Neutrals */
+      --bg: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --text-primary: #4A4A5A;
+      --text-secondary: #9A9AAA;
+      --text-muted: #C5C5D0;
+
+      /* Drawer */
+      --drawer-bg: #6B6B80;
+    }
+
+    body {
+      font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .mockup-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      justify-content: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    /* Phone Frame - Softer */
+    .phone-frame {
+      width: 375px;
+      height: 720px;
+      background: var(--card-bg);
+      border-radius: 44px;
+      box-shadow:
+        0 0 0 10px var(--lavender-deep),
+        0 30px 60px -15px rgba(123, 107, 141, 0.25),
+        0 10px 20px -5px rgba(123, 107, 141, 0.15);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 28px;
+      background: var(--lavender-deep);
+      border-radius: 0 0 20px 20px;
+      z-index: 100;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 48px;
+      background: var(--card-bg);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      padding: 0 24px 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .status-time {
+      color: var(--text-primary);
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-primary);
+    }
+
+    /* App Header */
+    .app-header {
+      padding: 20px 24px 24px;
+      background: var(--card-bg);
+    }
+
+    .app-title {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .app-date {
+      font-size: 15px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Habit List */
+    .habit-list {
+      flex: 1;
+      padding: 8px 0 100px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+
+    /* Habit Row */
+    .habit-row {
+      position: relative;
+      height: 88px;
+      background: var(--card-bg);
+      margin: 0 16px 12px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow:
+        0 2px 8px rgba(123, 107, 141, 0.08),
+        0 4px 16px rgba(123, 107, 141, 0.04);
+    }
+
+    .habit-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: transform 0.3s ease;
+      background: var(--card-bg);
+      z-index: 1;
+    }
+
+    .habit-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .habit-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .habit-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .logged-check {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--mint-deep), var(--health-green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 8px rgba(125, 211, 184, 0.4);
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0); }
+      to { transform: scale(1); }
+    }
+
+    .logged-check svg {
+      width: 14px;
+      height: 14px;
+      stroke: #ffffff;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .weekly-pips {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .pip {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--lavender);
+    }
+
+    .pip.filled {
+      background: linear-gradient(135deg, var(--mint-deep), var(--health-green));
+      box-shadow: 0 1px 4px rgba(125, 211, 184, 0.3);
+    }
+
+    .pip-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    /* Health Bar - Pill Shape */
+    .health-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .health-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--lavender);
+      border-radius: 10px;
+      overflow: visible;
+      position: relative;
+    }
+
+    .health-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+
+    /* Health Colors - Soft Gradients */
+    .health-overflow .health-bar-fill {
+      background: linear-gradient(90deg, var(--sky-deep), var(--health-blue));
+      box-shadow: 0 2px 12px rgba(126, 179, 232, 0.5);
+      animation: soft-pulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes soft-pulse {
+      0%, 100% { box-shadow: 0 2px 10px rgba(126, 179, 232, 0.4); }
+      50% { box-shadow: 0 3px 16px rgba(126, 179, 232, 0.6); }
+    }
+
+    .health-green .health-bar-fill {
+      background: linear-gradient(90deg, var(--mint-deep), var(--health-green));
+      box-shadow: 0 2px 8px rgba(125, 211, 184, 0.3);
+    }
+
+    .health-yellow .health-bar-fill {
+      background: linear-gradient(90deg, var(--health-yellow-light), var(--health-yellow));
+      box-shadow: 0 2px 8px rgba(245, 214, 122, 0.4);
+    }
+
+    .health-red .health-bar-fill {
+      background: linear-gradient(90deg, var(--health-red-light), var(--health-red));
+      box-shadow: 0 2px 8px rgba(240, 168, 168, 0.4);
+    }
+
+    .health-percent {
+      font-size: 14px;
+      font-weight: 800;
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .health-overflow .health-percent {
+      color: var(--health-blue);
+    }
+
+    .health-green .health-percent {
+      color: var(--mint-text);
+    }
+
+    .health-yellow .health-percent {
+      color: #C9A654;
+    }
+
+    .health-red .health-percent {
+      color: var(--peach-text);
+    }
+
+    /* Drawer (Backfill) - Softer */
+    .drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      background: var(--drawer-bg);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 0;
+      border-radius: 20px;
+    }
+
+    .drawer-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .drawer-days {
+      display: flex;
+      gap: 6px;
+    }
+
+    .drawer-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .drawer-day-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+    }
+
+    .drawer-day.today .drawer-day-label {
+      color: var(--health-blue);
+    }
+
+    .drawer-checkbox {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .drawer-checkbox:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    .drawer-checkbox.checked {
+      background: linear-gradient(135deg, var(--mint-deep), var(--health-green));
+      border-color: var(--health-green);
+      box-shadow: 0 2px 8px rgba(125, 211, 184, 0.4);
+    }
+
+    .drawer-checkbox svg {
+      width: 18px;
+      height: 18px;
+      stroke: #ffffff;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+    }
+
+    .drawer-checkbox.checked svg {
+      opacity: 1;
+    }
+
+    .drawer-day.today .drawer-checkbox {
+      border-color: var(--health-blue);
+    }
+
+    .drawer-day.today .drawer-checkbox.checked {
+      background: linear-gradient(135deg, var(--sky-deep), var(--health-blue));
+      border-color: var(--health-blue);
+      box-shadow: 0 2px 8px rgba(126, 179, 232, 0.4);
+    }
+
+    .drawer-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .drawer-close:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .drawer-close svg {
+      width: 18px;
+      height: 18px;
+      stroke: rgba(255, 255, 255, 0.7);
+      stroke-width: 2;
+    }
+
+    /* Drawer Open State */
+    .habit-row.drawer-open .habit-content {
+      transform: translateX(-100%);
+    }
+
+    /* FAB - Soft & Friendly */
+    .fab {
+      position: absolute;
+      bottom: 24px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--lavender-deep), #A890C4);
+      box-shadow:
+        0 4px 16px rgba(168, 144, 196, 0.4),
+        0 8px 24px rgba(168, 144, 196, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fab:hover {
+      transform: scale(1.08) translateY(-2px);
+      box-shadow:
+        0 6px 20px rgba(168, 144, 196, 0.5),
+        0 12px 32px rgba(168, 144, 196, 0.25);
+    }
+
+    .fab svg {
+      width: 26px;
+      height: 26px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 48px 32px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, var(--lavender), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 16px rgba(123, 107, 141, 0.1);
+    }
+
+    .empty-icon svg {
+      width: 40px;
+      height: 40px;
+      stroke: var(--lavender-text);
+      stroke-width: 1.5;
+    }
+
+    .empty-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .empty-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 260px;
+      line-height: 1.7;
+      font-weight: 500;
+    }
+
+    /* Hint Tooltip - Softer */
+    .hint {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--drawer-bg);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 16px;
+      border-radius: 12px;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(107, 107, 128, 0.3);
+    }
+
+    .hint::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid var(--drawer-bg);
+    }
+
+    /* Long Press Menu - Soft */
+    .context-menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--card-bg);
+      border-radius: 16px;
+      box-shadow:
+        0 10px 40px rgba(107, 107, 128, 0.25),
+        0 4px 16px rgba(107, 107, 128, 0.1);
+      overflow: hidden;
+      z-index: 50;
+    }
+
+    .context-menu-item {
+      padding: 16px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background 0.15s ease;
+    }
+
+    .context-menu-item:hover {
+      background: var(--lavender);
+    }
+
+    .context-menu-item svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .context-menu-item.edit svg {
+      stroke: var(--text-secondary);
+    }
+
+    .context-menu-item.delete {
+      color: var(--peach-text);
+    }
+
+    .context-menu-item.delete:hover {
+      background: var(--peach);
+    }
+
+    .context-menu-item.delete svg {
+      stroke: var(--peach-text);
+    }
+
+    .context-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(74, 74, 90, 0.4);
+      backdrop-filter: blur(2px);
+      z-index: 40;
+      border-radius: 44px;
+    }
+
+    /* Interaction Guide - Soft Cards */
+    .interactions-guide {
+      margin-top: 48px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .guide-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .guide-item {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow:
+        0 2px 8px rgba(123, 107, 141, 0.06),
+        0 4px 16px rgba(123, 107, 141, 0.04);
+    }
+
+    .guide-gesture {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--lavender-text);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .guide-action {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Color Legend - Soft Pills */
+    .color-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card-bg);
+      padding: 10px 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(123, 107, 141, 0.06);
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 10px;
+      border-radius: 10px;
+    }
+
+    .legend-color.blue {
+      background: linear-gradient(90deg, var(--sky-deep), var(--health-blue));
+      box-shadow: 0 2px 8px rgba(126, 179, 232, 0.4);
+    }
+
+    .legend-color.green {
+      background: linear-gradient(90deg, var(--mint-deep), var(--health-green));
+      box-shadow: 0 2px 8px rgba(125, 211, 184, 0.3);
+    }
+
+    .legend-color.yellow {
+      background: linear-gradient(90deg, var(--health-yellow-light), var(--health-yellow));
+      box-shadow: 0 2px 8px rgba(245, 214, 122, 0.4);
+    }
+
+    .legend-color.red {
+      background: linear-gradient(90deg, var(--health-red-light), var(--health-red));
+      box-shadow: 0 2px 8px rgba(240, 168, 168, 0.4);
+    }
+
+    .legend-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="page-title">smpl-tracker</h1>
+  <p class="page-subtitle">Soft & Rounded Style</p>
+
+  <div class="mockup-container">
+    <!-- Main Screen with Habits -->
+    <div class="mockup-section">
+      <div class="section-label">Main View - All States</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <!-- Habit 1: Overflow (115%) - Logged today -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Meditate</span>
+                  <div class="logged-check">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-overflow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="health-percent">115%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 2: Green (85%) - Weekly, 2/3 done -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Exercise</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">2/3</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-green">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 85%;"></div>
+                </div>
+                <span class="health-percent">85%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 3: Yellow (55%) - Drawer Open -->
+          <div class="habit-row drawer-open">
+            <div class="drawer">
+              <div class="drawer-content">
+                <div class="drawer-days">
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Mon</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Tue</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Wed</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Thu</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Fri</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day today">
+                    <span class="drawer-day-label">Sat</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Sun</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="drawer-close">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Read</span>
+                </div>
+              </div>
+              <div class="health-section health-yellow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 55%;"></div>
+                </div>
+                <span class="health-percent">55%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 4: Red (25%) - Weekly 1/4 done -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Journal</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">1/4</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-red">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 25%;"></div>
+                </div>
+                <span class="health-percent">25%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- Hint -->
+        <div class="hint">Swipe left to backfill past days</div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="mockup-section">
+      <div class="section-label">Empty State</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <h2 class="empty-title">No habits yet</h2>
+            <p class="empty-subtitle">Start building better routines. Tap the + button to add your first habit.</p>
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Long Press Menu -->
+    <div class="mockup-section">
+      <div class="section-label">Long Press Menu</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <!-- Habit 1 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Meditate</span>
+                  <div class="logged-check">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-overflow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="health-percent">115%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 2 - Selected -->
+          <div class="habit-row" style="transform: scale(0.97); opacity: 0.7;">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Exercise</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">2/3</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-green">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 85%;"></div>
+                </div>
+                <span class="health-percent">85%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 3 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Read</span>
+                </div>
+              </div>
+              <div class="health-section health-yellow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 55%;"></div>
+                </div>
+                <span class="health-percent">55%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 4 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Journal</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">1/4</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-red">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 25%;"></div>
+                </div>
+                <span class="health-percent">25%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overlay -->
+        <div class="context-overlay"></div>
+
+        <!-- Context Menu -->
+        <div class="context-menu">
+          <div class="context-menu-item edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit habit
+          </div>
+          <div class="context-menu-item delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete habit
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Legend -->
+  <div class="color-legend">
+    <div class="legend-item">
+      <div class="legend-color blue"></div>
+      <span class="legend-label">100%+ (Overflow)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color green"></div>
+      <span class="legend-label">70-99% (Healthy)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color yellow"></div>
+      <span class="legend-label">40-69% (Warning)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color red"></div>
+      <span class="legend-label">Below 40% (Critical)</span>
+    </div>
+  </div>
+
+  <!-- Interaction Guide -->
+  <div class="interactions-guide">
+    <h3 class="guide-title">Interaction Patterns</h3>
+    <div class="guide-grid">
+      <div class="guide-item">
+        <div class="guide-gesture">Tap</div>
+        <div class="guide-action">Log habit for today. Tap again to unlog. Checkmark appears instantly.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Swipe Left</div>
+        <div class="guide-action">Opens 7-day drawer for backfilling. Shows Mon-Sun with checkboxes.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Long Press</div>
+        <div class="guide-action">Opens context menu for Edit and Delete actions.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Close Drawer</div>
+        <div class="guide-action">Swipe right or tap the chevron to dismiss backfill view.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

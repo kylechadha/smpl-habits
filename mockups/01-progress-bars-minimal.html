@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Progress Bars Minimal Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Monochromatic palette with teal accent */
+      --color-bg: #FAFAFA;
+      --color-surface: #FFFFFF;
+      --color-text-primary: #1A1A1A;
+      --color-text-secondary: #6B6B6B;
+      --color-text-tertiary: #9E9E9E;
+      --color-border: #E8E8E8;
+
+      /* Accent - Deep Teal */
+      --color-accent: #0D9488;
+      --color-accent-light: #CCFBF1;
+      --color-accent-dark: #0F766E;
+
+      /* Health states */
+      --color-health-overflow: #0D9488;
+      --color-health-good: #0D9488;
+      --color-health-warning: #F59E0B;
+      --color-health-critical: #EF4444;
+
+      /* Progress bar backgrounds */
+      --color-bar-bg: #F0F0F0;
+      --color-bar-overflow-bg: rgba(13, 148, 136, 0.15);
+
+      /* Spacing scale */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-size-xs: 12px;
+      --font-size-sm: 14px;
+      --font-size-base: 16px;
+      --font-size-lg: 18px;
+      --font-size-xl: 24px;
+      --font-size-2xl: 32px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+
+      /* Border radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: #E5E5E5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-xl) var(--space-md);
+      gap: var(--space-xl);
+    }
+
+    /* ============================================
+       PHONE FRAME
+       ============================================ */
+    .phone-frame {
+      width: 375px;
+      min-height: 700px;
+      background: var(--color-bg);
+      border-radius: 40px;
+      box-shadow: var(--shadow-lg), 0 0 0 8px #1A1A1A;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 24px;
+      background: #1A1A1A;
+      border-radius: 12px;
+      z-index: 10;
+    }
+
+    .screen {
+      padding-top: 52px;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      padding: var(--space-lg) var(--space-lg) var(--space-md);
+    }
+
+    .header-date {
+      font-size: var(--font-size-xs);
+      font-weight: 500;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-xs);
+    }
+
+    .header-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    /* ============================================
+       HABIT LIST
+       ============================================ */
+    .habit-list {
+      flex: 1;
+      padding: 0 var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    /* ============================================
+       HABIT CARD
+       ============================================ */
+    .habit-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      transition: all 0.2s ease;
+    }
+
+    .habit-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .habit-card.logged {
+      background: var(--color-accent-light);
+    }
+
+    .habit-card.logged .habit-name {
+      color: var(--color-accent-dark);
+    }
+
+    .habit-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: var(--space-sm);
+    }
+
+    .habit-name {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .habit-percentage {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+      margin-left: var(--space-sm);
+    }
+
+    .habit-percentage.overflow {
+      color: var(--color-health-overflow);
+    }
+
+    .habit-percentage.warning {
+      color: var(--color-health-warning);
+    }
+
+    .habit-percentage.critical {
+      color: var(--color-health-critical);
+    }
+
+    /* ============================================
+       PROGRESS BAR
+       ============================================ */
+    .progress-container {
+      height: 6px;
+      background: var(--color-bar-bg);
+      border-radius: var(--radius-full);
+      overflow: visible;
+      position: relative;
+    }
+
+    .progress-container.overflow-container {
+      background: var(--color-bar-overflow-bg);
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: var(--radius-full);
+      transition: width 0.4s ease;
+      position: relative;
+    }
+
+    .progress-bar.good {
+      background: var(--color-health-good);
+    }
+
+    .progress-bar.warning {
+      background: var(--color-health-warning);
+    }
+
+    .progress-bar.critical {
+      background: var(--color-health-critical);
+    }
+
+    .progress-bar.overflow {
+      background: linear-gradient(90deg, var(--color-health-overflow) 0%, var(--color-accent-dark) 100%);
+    }
+
+    /* Overflow indicator - shows beyond 100% */
+    .progress-bar.overflow::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 10px;
+      background: var(--color-accent-dark);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--color-surface);
+    }
+
+    /* ============================================
+       CHECKBOX
+       ============================================ */
+    .habit-checkbox {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .habit-checkbox:hover {
+      border-color: var(--color-accent);
+    }
+
+    .habit-checkbox.checked {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+    }
+
+    .habit-checkbox.checked svg {
+      opacity: 1;
+    }
+
+    .habit-checkbox svg {
+      width: 16px;
+      height: 16px;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    /* ============================================
+       FREQUENCY LABEL
+       ============================================ */
+    .habit-frequency {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+      margin-top: var(--space-xs);
+    }
+
+    /* ============================================
+       FAB (FLOATING ACTION BUTTON)
+       ============================================ */
+    .fab {
+      position: absolute;
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 56px;
+      height: 56px;
+      background: var(--color-accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .fab:hover {
+      background: var(--color-accent-dark);
+      transform: scale(1.05);
+    }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2xl);
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--color-accent-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-lg);
+    }
+
+    .empty-state-icon svg {
+      width: 40px;
+      height: 40px;
+      color: var(--color-accent);
+    }
+
+    .empty-state-title {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .empty-state-text {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 260px;
+    }
+
+    .empty-state-button {
+      margin-top: var(--space-lg);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--color-accent);
+      color: white;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .empty-state-button:hover {
+      background: var(--color-accent-dark);
+    }
+
+    /* ============================================
+       SECTION LABELS
+       ============================================ */
+    .mockup-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: #666;
+      text-align: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ============================================
+       ANNOTATIONS
+       ============================================ */
+    .annotations {
+      width: 375px;
+      background: white;
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .annotations h3 {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .annotations ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .annotations li {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      padding-left: var(--space-md);
+      position: relative;
+    }
+
+    .annotations li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--color-accent);
+      border-radius: 50%;
+    }
+
+    /* Health state indicators in annotations */
+    .health-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      margin-right: var(--space-xs);
+      vertical-align: middle;
+    }
+
+    .health-indicator.overflow { background: var(--color-health-overflow); }
+    .health-indicator.good { background: var(--color-health-good); }
+    .health-indicator.warning { background: var(--color-health-warning); }
+    .health-indicator.critical { background: var(--color-health-critical); }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       MAIN STATE - Home with habits
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Home Screen - Active Habits</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-date">Saturday, Jan 11</div>
+          <h1 class="header-title">Today</h1>
+        </header>
+
+        <div class="habit-list">
+
+          <!-- Overflow state (120%) - logged today, banked extra -->
+          <div class="habit-card logged">
+            <div class="habit-content">
+              <div class="habit-header">
+                <span class="habit-name">Morning run</span>
+                <span class="habit-percentage overflow">120%</span>
+              </div>
+              <div class="progress-container overflow-container">
+                <div class="progress-bar overflow" style="width: 100%;"></div>
+              </div>
+              <div class="habit-frequency">Daily</div>
+            </div>
+            <div class="habit-checkbox checked">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Good state (85%) - healthy but not logged today -->
+          <div class="habit-card">
+            <div class="habit-content">
+              <div class="habit-header">
+                <span class="habit-name">Read for 30 min</span>
+                <span class="habit-percentage">85%</span>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar good" style="width: 85%;"></div>
+              </div>
+              <div class="habit-frequency">Daily</div>
+            </div>
+            <div class="habit-checkbox">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Warning state (45%) - needs attention -->
+          <div class="habit-card">
+            <div class="habit-content">
+              <div class="habit-header">
+                <span class="habit-name">Meditate</span>
+                <span class="habit-percentage warning">45%</span>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar warning" style="width: 45%;"></div>
+              </div>
+              <div class="habit-frequency">3x per week</div>
+            </div>
+            <div class="habit-checkbox">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Critical state (10%) - about to fail -->
+          <div class="habit-card">
+            <div class="habit-content">
+              <div class="habit-header">
+                <span class="habit-name">Practice guitar</span>
+                <span class="habit-percentage critical">10%</span>
+              </div>
+              <div class="progress-container">
+                <div class="progress-bar critical" style="width: 10%;"></div>
+              </div>
+              <div class="habit-frequency">Daily</div>
+            </div>
+            <div class="habit-checkbox">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       EMPTY STATE
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Empty State - New User</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-date">Saturday, Jan 11</div>
+          <h1 class="header-title">Today</h1>
+        </header>
+
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path>
+            </svg>
+          </div>
+          <h2 class="empty-state-title">Start fresh</h2>
+          <p class="empty-state-text">Add your first habit. New habits start at 100% health and decay when you miss targets.</p>
+          <button class="empty-state-button">Add habit</button>
+        </div>
+
+        <!-- FAB (also shown in empty state for consistency) -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       DESIGN ANNOTATIONS
+       ========================================== -->
+  <div class="annotations">
+    <h3>Design Notes</h3>
+    <ul>
+      <li><span class="health-indicator overflow"></span><strong>Overflow (100%+):</strong> Teal bar fills completely with dot indicator. Card gets light teal background when logged.</li>
+      <li><span class="health-indicator good"></span><strong>Good (60-100%):</strong> Teal progress bar. Habit is healthy.</li>
+      <li><span class="health-indicator warning"></span><strong>Warning (30-59%):</strong> Amber bar signals attention needed.</li>
+      <li><span class="health-indicator critical"></span><strong>Critical (0-29%):</strong> Red bar warns of imminent failure.</li>
+      <li><strong>Checkbox:</strong> Right-aligned for easy thumb reach. Tap to log, tap again to undo.</li>
+      <li><strong>Typography:</strong> Inter font. Large 32px title, 16px habit names, 12px metadata.</li>
+      <li><strong>Spacing:</strong> 16px card padding, 8px gap between cards, generous whitespace.</li>
+      <li><strong>FAB:</strong> Floating action button for adding new habits. Always visible.</li>
+    </ul>
+  </div>
+
+</body>
+</html>

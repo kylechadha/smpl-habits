@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Health Bars Gaming Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f0a1f;
+      --bg-card: #1a1230;
+      --bg-card-hover: #231840;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-muted: rgba(255, 255, 255, 0.35);
+
+      --health-critical: #ff3366;
+      --health-low: #ff6b35;
+      --health-medium: #ffc233;
+      --health-good: #00d68f;
+      --health-overflow: #00ffcc;
+      --health-overflow-glow: rgba(0, 255, 204, 0.5);
+
+      --accent-purple: #8b5cf6;
+      --accent-blue: #3b82f6;
+
+      --bar-bg: rgba(255, 255, 255, 0.1);
+      --bar-segment: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* Container for mockup frames */
+    .mockup-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      padding: 48px;
+      justify-content: center;
+      background: #1a1a2e;
+    }
+
+    .mockup-frame {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .mockup-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-secondary);
+    }
+
+    .phone-frame {
+      width: 375px;
+      height: 812px;
+      background: var(--bg-dark);
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 12px #1a1230,
+        0 25px 80px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    /* Status bar */
+    .status-bar {
+      height: 44px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 24px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .status-bar-time {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+    }
+
+    .status-bar-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-bar-icons svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--text-primary);
+    }
+
+    /* Screen content */
+    .screen-content {
+      height: calc(100% - 44px);
+      overflow-y: auto;
+      padding-bottom: 100px;
+    }
+
+    /* Header */
+    .header {
+      padding: 16px 24px 24px;
+    }
+
+    .header-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-value.good { color: var(--health-good); }
+    .stat-value.warning { color: var(--health-medium); }
+    .stat-value.critical { color: var(--health-critical); }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Habit list */
+    .habit-list {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Habit card */
+    .habit-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .habit-card:hover {
+      background: var(--bg-card-hover);
+    }
+
+    /* Health bar container */
+    .health-bar-container {
+      flex: 1;
+    }
+
+    .habit-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .habit-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .habit-frequency {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .health-percent {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .health-percent.critical { color: var(--health-critical); }
+    .health-percent.low { color: var(--health-low); }
+    .health-percent.medium { color: var(--health-medium); }
+    .health-percent.good { color: var(--health-good); }
+    .health-percent.overflow { color: var(--health-overflow); }
+
+    /* Health bar */
+    .health-bar-wrapper {
+      position: relative;
+      height: 16px;
+    }
+
+    .health-bar-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--bar-bg);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    /* Segment markers */
+    .health-bar-segments {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      gap: 2px;
+      padding: 3px;
+      pointer-events: none;
+    }
+
+    .segment {
+      flex: 1;
+      background: var(--bar-segment);
+      border-radius: 2px;
+    }
+
+    /* Health bar fill */
+    .health-bar-fill {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 3px;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .health-bar-fill.critical {
+      background: linear-gradient(90deg, var(--health-critical), #ff4d7a);
+      box-shadow: 0 0 12px rgba(255, 51, 102, 0.5);
+    }
+
+    .health-bar-fill.low {
+      background: linear-gradient(90deg, var(--health-low), #ff8855);
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.4);
+    }
+
+    .health-bar-fill.medium {
+      background: linear-gradient(90deg, var(--health-medium), #ffd044);
+      box-shadow: 0 0 10px rgba(255, 194, 51, 0.4);
+    }
+
+    .health-bar-fill.good {
+      background: linear-gradient(90deg, var(--health-good), #00f5a0);
+      box-shadow: 0 0 10px rgba(0, 214, 143, 0.4);
+    }
+
+    /* Overflow state */
+    .health-bar-fill.overflow {
+      background: linear-gradient(90deg, var(--health-good), var(--health-overflow));
+      box-shadow: 0 0 16px var(--health-overflow-glow);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 16px var(--health-overflow-glow);
+      }
+      50% {
+        box-shadow: 0 0 24px var(--health-overflow-glow), 0 0 32px rgba(0, 255, 204, 0.3);
+      }
+    }
+
+    /* Overflow segment */
+    .overflow-segment {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      right: 3px;
+      width: calc(20% - 4px);
+      border-radius: 2px;
+      background: var(--health-overflow);
+      opacity: 0.6;
+      animation: overflow-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes overflow-pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+
+    /* Log button */
+    .log-button {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      border: 2px solid var(--border-subtle);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .log-button svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--text-secondary);
+      stroke-width: 2.5;
+      fill: none;
+      transition: all 0.2s ease;
+    }
+
+    .log-button:hover {
+      border-color: var(--health-good);
+      background: rgba(0, 214, 143, 0.1);
+    }
+
+    .log-button:hover svg {
+      stroke: var(--health-good);
+    }
+
+    .log-button.logged {
+      background: var(--health-good);
+      border-color: var(--health-good);
+      animation: log-pop 0.3s ease;
+    }
+
+    .log-button.logged svg {
+      stroke: var(--bg-dark);
+    }
+
+    @keyframes log-pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    /* FAB */
+    .fab {
+      position: absolute;
+      bottom: 32px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow:
+        0 8px 24px rgba(139, 92, 246, 0.4),
+        0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 12px 32px rgba(139, 92, 246, 0.5),
+        0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .fab svg {
+      width: 28px;
+      height: 28px;
+      stroke: white;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .empty-icon-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      border-radius: 32px;
+      opacity: 0.15;
+    }
+
+    .empty-icon svg {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 28px;
+    }
+
+    .empty-icon svg path {
+      stroke: var(--accent-purple);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .empty-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .empty-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 260px;
+    }
+
+    .empty-cta {
+      margin-top: 40px;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      border: none;
+      border-radius: 14px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .empty-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+    }
+
+    .empty-cta svg {
+      width: 20px;
+      height: 20px;
+      stroke: white;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    /* Decorative elements for empty state */
+    .empty-decor {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .decor-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.3;
+    }
+
+    .decor-orb-1 {
+      width: 200px;
+      height: 200px;
+      background: var(--accent-purple);
+      top: 15%;
+      left: -50px;
+    }
+
+    .decor-orb-2 {
+      width: 150px;
+      height: 150px;
+      background: var(--accent-blue);
+      bottom: 20%;
+      right: -30px;
+    }
+
+    /* Level badge for overflow */
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      background: rgba(0, 255, 204, 0.15);
+      border-radius: 6px;
+      margin-left: 8px;
+    }
+
+    .level-badge span {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--health-overflow);
+      letter-spacing: 0.5px;
+    }
+
+    .level-badge svg {
+      width: 12px;
+      height: 12px;
+      fill: var(--health-overflow);
+    }
+
+    /* Critical warning indicator */
+    .critical-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .critical-indicator svg {
+      width: 14px;
+      height: 14px;
+      fill: var(--health-critical);
+      animation: warning-pulse 1s ease-in-out infinite;
+    }
+
+    .critical-indicator span {
+      font-size: 11px;
+      color: var(--health-critical);
+      font-weight: 500;
+    }
+
+    @keyframes warning-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Home indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-container">
+    <!-- Main screen with habits at different health levels -->
+    <div class="mockup-frame">
+      <span class="mockup-label">Home Screen - Active Habits</span>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-bar-time">9:41</span>
+          <div class="status-bar-icons">
+            <svg viewBox="0 0 24 24"><path d="M2 16.5C2 15.67 2.67 15 3.5 15H5.5C6.33 15 7 15.67 7 16.5V20.5C7 21.33 6.33 22 5.5 22H3.5C2.67 22 2 21.33 2 20.5V16.5Z"/><path d="M8 13.5C8 12.67 8.67 12 9.5 12H11.5C12.33 12 13 12.67 13 13.5V20.5C13 21.33 12.33 22 11.5 22H9.5C8.67 22 8 21.33 8 20.5V13.5Z"/><path d="M14 10.5C14 9.67 14.67 9 15.5 9H17.5C18.33 9 19 9.67 19 10.5V20.5C19 21.33 18.33 22 17.5 22H15.5C14.67 22 14 21.33 14 20.5V10.5Z"/><path d="M20 7.5C20 6.67 20.67 6 21.5 6H23.5C24.33 6 25 6.67 25 7.5V20.5C25 21.33 24.33 22 23.5 22H21.5C20.67 22 20 21.33 20 20.5V7.5Z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="12" rx="2" stroke="currentColor" fill="none" stroke-width="2"/><path d="M22 11v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="12" height="8" rx="1" fill="currentColor"/></svg>
+          </div>
+        </div>
+
+        <div class="screen-content">
+          <div class="header">
+            <h1 class="header-title">QUESTS</h1>
+            <p class="header-subtitle">Keep your habits alive</p>
+            <div class="header-stats">
+              <div class="stat-item">
+                <span class="stat-value good">3</span>
+                <span class="stat-label">Healthy</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value critical">1</span>
+                <span class="stat-label">Critical</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">4</span>
+                <span class="stat-label">Total</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="habit-list">
+            <!-- Overflow state: 120% -->
+            <div class="habit-card">
+              <div class="health-bar-container">
+                <div class="habit-info">
+                  <div>
+                    <span class="habit-name">Morning Run</span>
+                    <span class="level-badge">
+                      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                      <span>BANKED</span>
+                    </span>
+                  </div>
+                  <span class="health-percent overflow">120%</span>
+                </div>
+                <div class="health-bar-wrapper">
+                  <div class="health-bar-bg"></div>
+                  <div class="health-bar-segments">
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                  </div>
+                  <div class="health-bar-fill overflow" style="width: calc(100% - 6px);"></div>
+                  <div class="overflow-segment"></div>
+                </div>
+              </div>
+              <button class="log-button logged">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- Good state: 85% -->
+            <div class="habit-card">
+              <div class="health-bar-container">
+                <div class="habit-info">
+                  <span class="habit-name">Read 30 mins</span>
+                  <span class="health-percent good">85%</span>
+                </div>
+                <div class="health-bar-wrapper">
+                  <div class="health-bar-bg"></div>
+                  <div class="health-bar-segments">
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                  </div>
+                  <div class="health-bar-fill good" style="width: calc(85% - 6px);"></div>
+                </div>
+              </div>
+              <button class="log-button">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- Medium state: 45% -->
+            <div class="habit-card">
+              <div class="health-bar-container">
+                <div class="habit-info">
+                  <span class="habit-name">Meditate</span>
+                  <span class="health-percent medium">45%</span>
+                </div>
+                <div class="health-bar-wrapper">
+                  <div class="health-bar-bg"></div>
+                  <div class="health-bar-segments">
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                  </div>
+                  <div class="health-bar-fill medium" style="width: calc(45% - 6px);"></div>
+                </div>
+              </div>
+              <button class="log-button">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </button>
+            </div>
+
+            <!-- Critical state: 10% -->
+            <div class="habit-card">
+              <div class="health-bar-container">
+                <div class="habit-info">
+                  <span class="habit-name">Practice Guitar</span>
+                  <span class="health-percent critical">10%</span>
+                </div>
+                <div class="health-bar-wrapper">
+                  <div class="health-bar-bg"></div>
+                  <div class="health-bar-segments">
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                    <div class="segment"></div>
+                  </div>
+                  <div class="health-bar-fill critical" style="width: calc(10% - 3px);"></div>
+                </div>
+                <div class="critical-indicator">
+                  <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.5L19.5 19h-15L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+                  <span>Needs attention - decay accelerating</span>
+                </div>
+              </div>
+              <button class="log-button">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="fab">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="mockup-frame">
+      <span class="mockup-label">Empty State - New User</span>
+      <div class="phone-frame">
+        <div class="empty-decor">
+          <div class="decor-orb decor-orb-1"></div>
+          <div class="decor-orb decor-orb-2"></div>
+        </div>
+        <div class="status-bar">
+          <span class="status-bar-time">9:41</span>
+          <div class="status-bar-icons">
+            <svg viewBox="0 0 24 24"><path d="M2 16.5C2 15.67 2.67 15 3.5 15H5.5C6.33 15 7 15.67 7 16.5V20.5C7 21.33 6.33 22 5.5 22H3.5C2.67 22 2 21.33 2 20.5V16.5Z"/><path d="M8 13.5C8 12.67 8.67 12 9.5 12H11.5C12.33 12 13 12.67 13 13.5V20.5C13 21.33 12.33 22 11.5 22H9.5C8.67 22 8 21.33 8 20.5V13.5Z"/><path d="M14 10.5C14 9.67 14.67 9 15.5 9H17.5C18.33 9 19 9.67 19 10.5V20.5C19 21.33 18.33 22 17.5 22H15.5C14.67 22 14 21.33 14 20.5V10.5Z"/><path d="M20 7.5C20 6.67 20.67 6 21.5 6H23.5C24.33 6 25 6.67 25 7.5V20.5C25 21.33 24.33 22 23.5 22H21.5C20.67 22 20 21.33 20 20.5V7.5Z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="12" rx="2" stroke="currentColor" fill="none" stroke-width="2"/><path d="M22 11v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4" y="9" width="12" height="8" rx="1" fill="currentColor"/></svg>
+          </div>
+        </div>
+
+        <div class="screen-content">
+          <div class="header">
+            <h1 class="header-title">QUESTS</h1>
+            <p class="header-subtitle">Keep your habits alive</p>
+          </div>
+
+          <div class="empty-state">
+            <div class="empty-icon">
+              <div class="empty-icon-bg"></div>
+              <svg viewBox="0 0 24 24">
+                <path d="M12 2L4 7v10l8 5 8-5V7l-8-5z"/>
+                <path d="M12 22V12"/>
+                <path d="M20 7l-8 5-8-5"/>
+              </svg>
+            </div>
+            <h2 class="empty-title">NO QUESTS YET</h2>
+            <p class="empty-subtitle">Add your first quest to begin tracking. Each quest starts at full health and decays when neglected.</p>
+            <button class="empty-cta">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              ADD FIRST QUEST
+            </button>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Interactive demo for log buttons
+    document.querySelectorAll('.log-button').forEach(button => {
+      button.addEventListener('click', function() {
+        this.classList.toggle('logged');
+      });
+    });
+  </script>
+</body>
+</html>

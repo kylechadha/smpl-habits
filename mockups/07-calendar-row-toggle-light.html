@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Calendar Row + Toggle (Light)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #FAFAFA;
+      --bg-card: #FFFFFF;
+      --bg-subtle: #F5F5F5;
+      --text-primary: #1A1A1A;
+      --text-secondary: #6B6B6B;
+      --text-tertiary: #9B9B9B;
+      --border: #E8E8E8;
+      --health-excellent: #22C55E;
+      --health-good: #84CC16;
+      --health-warning: #F59E0B;
+      --health-danger: #EF4444;
+      --accent: #3B82F6;
+      --toggle-bg: #E0E0E0;
+      --toggle-active: #22C55E;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      display: flex;
+      gap: 40px;
+      padding: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+      background: #F0F0F0;
+      min-height: 100vh;
+    }
+
+    .screen-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .screen-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .phone {
+      width: 375px;
+      height: 812px;
+      background: var(--bg-primary);
+      border-radius: 44px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .status-bar {
+      height: 47px;
+      padding: 14px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: var(--bg-primary);
+    }
+
+    .status-time {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .header {
+      padding: 8px 24px 20px;
+      background: var(--bg-primary);
+    }
+
+    .header-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .header-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .day-labels {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 24px 8px;
+      gap: 8px;
+      padding-right: 88px;
+    }
+
+    .day-label {
+      width: 28px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+    }
+
+    .day-label.today {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .habits-list {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .habit-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .habit-card:active {
+      transform: scale(0.98);
+    }
+
+    .habit-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .habit-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .habit-health {
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .health-excellent { color: var(--health-excellent); }
+    .health-good { color: var(--health-good); }
+    .health-warning { color: var(--health-warning); }
+    .health-danger { color: var(--health-danger); }
+
+    .habit-frequency {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .calendar-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .calendar-day {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .calendar-day.empty {
+      background: var(--bg-subtle);
+      border: 1.5px dashed var(--border);
+    }
+
+    .calendar-day.filled {
+      background: var(--health-excellent);
+    }
+
+    .calendar-day.filled::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.9;
+    }
+
+    .calendar-day.empty:hover {
+      background: var(--bg-subtle);
+      border-color: var(--text-tertiary);
+      transform: scale(1.1);
+    }
+
+    .calendar-day.today {
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toggle-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toggle-btn.inactive {
+      background: var(--bg-subtle);
+      border: 2px solid var(--border);
+    }
+
+    .toggle-btn.inactive:hover {
+      background: #EBEBEB;
+      transform: scale(1.05);
+    }
+
+    .toggle-btn.inactive:active {
+      transform: scale(0.95);
+    }
+
+    .toggle-btn.inactive svg {
+      width: 24px;
+      height: 24px;
+      color: var(--text-tertiary);
+    }
+
+    .toggle-btn.active {
+      background: var(--health-excellent);
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    }
+
+    .toggle-btn.active:active {
+      transform: scale(0.95);
+    }
+
+    .toggle-btn.active svg {
+      width: 28px;
+      height: 28px;
+      color: white;
+    }
+
+    .fab {
+      position: absolute;
+      bottom: 40px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .fab:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-subtle);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .empty-icon svg {
+      width: 40px;
+      height: 40px;
+      color: var(--text-tertiary);
+    }
+
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .empty-description {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    /* Backfill Tooltip */
+    .backfill-demo {
+      position: relative;
+    }
+
+    .backfill-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-primary);
+      color: white;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+      box-shadow: var(--shadow-md);
+    }
+
+    .backfill-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--text-primary);
+    }
+
+    .calendar-day.backfill-target {
+      animation: pulse 1.5s ease-in-out infinite;
+      border-color: var(--accent) !important;
+      border-style: solid !important;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    /* Home indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: var(--text-primary);
+      border-radius: 3px;
+      opacity: 0.2;
+    }
+
+    /* Annotation styles */
+    .annotation {
+      position: absolute;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .annotation-line {
+      position: absolute;
+      background: var(--accent);
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Main Home Screen -->
+    <div class="screen-wrapper">
+      <span class="screen-label">Home - Habits List</span>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.5 3 3.75 5.57 2 9.25l1.75 1.38C5.19 7.44 8.38 5.5 12 5.5s6.81 1.94 8.25 5.13L22 9.25C20.25 5.57 16.5 3 12 3zm0 5c-2.67 0-5.06 1.17-6.7 3l1.75 1.38C8.33 10.94 10.06 10 12 10s3.67.94 4.95 2.38L18.7 11c-1.64-1.83-4.03-3-6.7-3zm0 5c-1.33 0-2.53.58-3.35 1.5L12 18l3.35-3.5C14.53 13.58 13.33 13 12 13z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4zm-4 16h-2v-2h2v2zm0-4h-2V9h2v7z"/></svg>
+          </div>
+        </div>
+
+        <div class="header">
+          <h1 class="header-title">Today</h1>
+          <p class="header-subtitle">Saturday, Jan 11</p>
+        </div>
+
+        <div class="day-labels">
+          <span class="day-label">Sun</span>
+          <span class="day-label">Mon</span>
+          <span class="day-label">Tue</span>
+          <span class="day-label">Wed</span>
+          <span class="day-label">Thu</span>
+          <span class="day-label">Fri</span>
+          <span class="day-label today">Sat</span>
+        </div>
+
+        <div class="habits-list">
+
+          <!-- Habit 1: Excellent health (110%) - overflow -->
+          <div class="habit-card">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Morning Run</span>
+                <span class="habit-health health-excellent">110%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn active">
+                <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Habit 2: Good health (75%) -->
+          <div class="habit-card">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Read 30 mins</span>
+                <span class="habit-health health-good">75%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn inactive">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Habit 3: Warning health (50%) -->
+          <div class="habit-card">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Meditate</span>
+                <span class="habit-health health-warning">50%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn inactive">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Habit 4: Danger health (20%) -->
+          <div class="habit-card">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Practice Guitar</span>
+                <span class="habit-health health-danger">20%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day empty today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn inactive">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <button class="fab">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Backfill Interaction Demo -->
+    <div class="screen-wrapper">
+      <span class="screen-label">Backfill - Tap Past Day</span>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.5 3 3.75 5.57 2 9.25l1.75 1.38C5.19 7.44 8.38 5.5 12 5.5s6.81 1.94 8.25 5.13L22 9.25C20.25 5.57 16.5 3 12 3zm0 5c-2.67 0-5.06 1.17-6.7 3l1.75 1.38C8.33 10.94 10.06 10 12 10s3.67.94 4.95 2.38L18.7 11c-1.64-1.83-4.03-3-6.7-3zm0 5c-1.33 0-2.53.58-3.35 1.5L12 18l3.35-3.5C14.53 13.58 13.33 13 12 13z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4zm-4 16h-2v-2h2v2zm0-4h-2V9h2v7z"/></svg>
+          </div>
+        </div>
+
+        <div class="header">
+          <h1 class="header-title">Today</h1>
+          <p class="header-subtitle">Saturday, Jan 11</p>
+        </div>
+
+        <div class="day-labels">
+          <span class="day-label">Sun</span>
+          <span class="day-label">Mon</span>
+          <span class="day-label">Tue</span>
+          <span class="day-label">Wed</span>
+          <span class="day-label">Thu</span>
+          <span class="day-label">Fri</span>
+          <span class="day-label today">Sat</span>
+        </div>
+
+        <div class="habits-list">
+
+          <!-- Habit with backfill demo -->
+          <div class="habit-card">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Read 30 mins</span>
+                <span class="habit-health health-good">75%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day backfill-demo">
+                  <div class="backfill-tooltip">Tap to log Monday</div>
+                  <div class="calendar-day empty backfill-target"></div>
+                </div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn inactive">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- After backfill - showing the result -->
+          <div class="habit-card" style="margin-top: 24px; border: 2px dashed var(--health-excellent);">
+            <div class="habit-info">
+              <div class="habit-header">
+                <span class="habit-name">Read 30 mins</span>
+                <span class="habit-health health-excellent" style="transition: color 0.3s;">82%</span>
+              </div>
+              <div class="calendar-row">
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled" style="animation: pop 0.3s ease;"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty"></div>
+                <div class="calendar-day filled"></div>
+                <div class="calendar-day empty today"></div>
+              </div>
+            </div>
+            <div class="toggle-container">
+              <button class="toggle-btn inactive">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p style="text-align: center; font-size: 12px; color: var(--text-tertiary); margin-top: 8px;">
+            After tapping Monday - health increased
+          </p>
+
+        </div>
+
+        <button class="fab">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="screen-wrapper">
+      <span class="screen-label">Empty State</span>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.5 3 3.75 5.57 2 9.25l1.75 1.38C5.19 7.44 8.38 5.5 12 5.5s6.81 1.94 8.25 5.13L22 9.25C20.25 5.57 16.5 3 12 3zm0 5c-2.67 0-5.06 1.17-6.7 3l1.75 1.38C8.33 10.94 10.06 10 12 10s3.67.94 4.95 2.38L18.7 11c-1.64-1.83-4.03-3-6.7-3zm0 5c-1.33 0-2.53.58-3.35 1.5L12 18l3.35-3.5C14.53 13.58 13.33 13 12 13z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4zm-4 16h-2v-2h2v2zm0-4h-2V9h2v7z"/></svg>
+          </div>
+        </div>
+
+        <div class="header">
+          <h1 class="header-title">Today</h1>
+          <p class="header-subtitle">Saturday, Jan 11</p>
+        </div>
+
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+            </svg>
+          </div>
+          <h2 class="empty-title">No habits yet</h2>
+          <p class="empty-description">
+            Tap the + button to create your first habit. They start at 100% health and decay when you miss them.
+          </p>
+        </div>
+
+        <button class="fab">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+    <!-- Toggle States Demo -->
+    <div class="screen-wrapper">
+      <span class="screen-label">Toggle States</span>
+      <div class="phone">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 3C7.5 3 3.75 5.57 2 9.25l1.75 1.38C5.19 7.44 8.38 5.5 12 5.5s6.81 1.94 8.25 5.13L22 9.25C20.25 5.57 16.5 3 12 3zm0 5c-2.67 0-5.06 1.17-6.7 3l1.75 1.38C8.33 10.94 10.06 10 12 10s3.67.94 4.95 2.38L18.7 11c-1.64-1.83-4.03-3-6.7-3zm0 5c-1.33 0-2.53.58-3.35 1.5L12 18l3.35-3.5C14.53 13.58 13.33 13 12 13z"/></svg>
+            <svg fill="currentColor" viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4zm-4 16h-2v-2h2v2zm0-4h-2V9h2v7z"/></svg>
+          </div>
+        </div>
+
+        <div class="header">
+          <h1 class="header-title">Toggle Demo</h1>
+          <p class="header-subtitle">Large, satisfying buttons</p>
+        </div>
+
+        <div style="padding: 24px 32px; display: flex; flex-direction: column; gap: 32px;">
+
+          <div style="display: flex; align-items: center; gap: 24px;">
+            <button class="toggle-btn inactive" style="flex-shrink: 0;">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m6-6H6"/>
+              </svg>
+            </button>
+            <div>
+              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Not Logged</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">Tap to log for today</div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 24px;">
+            <button class="toggle-btn active" style="flex-shrink: 0;">
+              <svg fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+            <div>
+              <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Logged</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">Tap again to undo</div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border); padding-top: 32px;">
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Calendar Day States</div>
+
+            <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div class="calendar-day empty"></div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Empty</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div class="calendar-day filled"></div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Logged</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div class="calendar-day empty today"></div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Today</span>
+              </div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div class="calendar-day filled today"></div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Today Done</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="border-top: 1px solid var(--border); padding-top: 32px;">
+            <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Health Colors</div>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 700;" class="health-excellent">110%</div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Overflow</span>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 700;" class="health-good">75%</div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Good</span>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 700;" class="health-warning">50%</div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Warning</span>
+              </div>
+              <div style="text-align: center;">
+                <div style="font-size: 24px; font-weight: 700;" class="health-danger">20%</div>
+                <span style="font-size: 11px; color: var(--text-tertiary);">Danger</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <style>
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</body>
+</html>

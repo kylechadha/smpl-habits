@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Battery Drain + Swipe to Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Light palette */
+      --color-bg: #F8F9FA;
+      --color-surface: #FFFFFF;
+      --color-text-primary: #1A1D21;
+      --color-text-secondary: #5F6368;
+      --color-text-tertiary: #9AA0A6;
+      --color-border: #E8EAED;
+
+      /* Health states - battery metaphor */
+      --color-health-full: #34A853;
+      --color-health-good: #34A853;
+      --color-health-warning: #FBBC04;
+      --color-health-critical: #EA4335;
+      --color-health-overflow: #4285F4;
+      --color-overflow-glow: rgba(66, 133, 244, 0.3);
+
+      /* Battery visual */
+      --battery-bg: #E8EAED;
+      --battery-border: #DADCE0;
+
+      /* Swipe action */
+      --swipe-bg: #34A853;
+      --swipe-reveal: rgba(52, 168, 83, 0.1);
+
+      /* Spacing scale */
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-size-xs: 11px;
+      --font-size-sm: 13px;
+      --font-size-base: 15px;
+      --font-size-lg: 17px;
+      --font-size-xl: 22px;
+      --font-size-2xl: 28px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+      /* Border radius */
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: #E0E0E0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-xl) var(--space-md);
+      gap: var(--space-xl);
+    }
+
+    /* ============================================
+       PHONE FRAME
+       ============================================ */
+    .phone-frame {
+      width: 375px;
+      min-height: 700px;
+      background: var(--color-bg);
+      border-radius: 44px;
+      box-shadow: var(--shadow-lg), 0 0 0 10px #1A1D21;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 28px;
+      background: #1A1D21;
+      border-radius: 14px;
+      z-index: 10;
+    }
+
+    .screen {
+      padding-top: 56px;
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      padding: var(--space-lg) var(--space-lg) var(--space-md);
+    }
+
+    .header-date {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: var(--space-xs);
+    }
+
+    .header-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    /* ============================================
+       HABIT LIST
+       ============================================ */
+    .habit-list {
+      flex: 1;
+      padding: 0 var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    /* ============================================
+       HABIT ROW - Swipeable Container
+       ============================================ */
+    .habit-row {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-md);
+    }
+
+    /* Swipe reveal background */
+    .swipe-action {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: var(--swipe-bg);
+      display: flex;
+      align-items: center;
+      padding-left: var(--space-lg);
+      border-radius: var(--radius-md);
+    }
+
+    .swipe-action svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    .swipe-action-text {
+      color: white;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      margin-left: var(--space-sm);
+    }
+
+    /* ============================================
+       HABIT CARD
+       ============================================ */
+    .habit-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      position: relative;
+      z-index: 1;
+      transition: transform 0.2s ease;
+    }
+
+    /* Swipe hint arrow */
+    .habit-card::after {
+      content: '';
+      position: absolute;
+      right: var(--space-md);
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 10px;
+      background: var(--color-text-tertiary);
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+
+    .habit-card:hover::after {
+      opacity: 0.6;
+    }
+
+    /* Swiped state preview */
+    .habit-row.swiping .habit-card {
+      transform: translateX(80px);
+    }
+
+    /* Logged state */
+    .habit-row.logged .habit-card {
+      background: linear-gradient(90deg, rgba(52, 168, 83, 0.06) 0%, var(--color-surface) 100%);
+    }
+
+    .habit-row.logged .habit-card::after {
+      display: none;
+    }
+
+    /* ============================================
+       BATTERY INDICATOR
+       ============================================ */
+    .battery-container {
+      width: 32px;
+      height: 56px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* Battery cap (top nub) */
+    .battery-cap {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px;
+      height: 4px;
+      background: var(--battery-border);
+      border-radius: 2px 2px 0 0;
+    }
+
+    /* Battery body */
+    .battery-body {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--battery-bg);
+      border: 2px solid var(--battery-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* Battery fill - drains from top to bottom */
+    .battery-fill {
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      bottom: 2px;
+      border-radius: 3px;
+      transition: height 0.4s ease, background 0.3s ease;
+    }
+
+    .battery-fill.full {
+      background: var(--color-health-full);
+    }
+
+    .battery-fill.good {
+      background: var(--color-health-good);
+    }
+
+    .battery-fill.warning {
+      background: var(--color-health-warning);
+    }
+
+    .battery-fill.critical {
+      background: var(--color-health-critical);
+    }
+
+    /* Overflow state - overcharged glow */
+    .battery-container.overflow .battery-body {
+      border-color: var(--color-health-overflow);
+      box-shadow:
+        0 0 0 2px var(--color-overflow-glow),
+        0 0 12px var(--color-overflow-glow),
+        inset 0 0 8px var(--color-overflow-glow);
+    }
+
+    .battery-fill.overflow {
+      background: linear-gradient(180deg, var(--color-health-overflow) 0%, #1a73e8 100%);
+    }
+
+    /* Overflow spark effect */
+    .battery-container.overflow::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 8px;
+      height: 8px;
+      background: var(--color-health-overflow);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--color-health-overflow);
+      animation: spark 1.5s ease-in-out infinite;
+    }
+
+    @keyframes spark {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(0.8); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+    }
+
+    /* ============================================
+       HABIT CONTENT
+       ============================================ */
+    .habit-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-xs);
+    }
+
+    .habit-name {
+      font-size: var(--font-size-base);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .habit-percentage {
+      font-size: var(--font-size-sm);
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .habit-percentage.overflow {
+      color: var(--color-health-overflow);
+    }
+
+    .habit-percentage.good {
+      color: var(--color-health-good);
+    }
+
+    .habit-percentage.warning {
+      color: var(--color-health-warning);
+    }
+
+    .habit-percentage.critical {
+      color: var(--color-health-critical);
+    }
+
+    .habit-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+
+    .habit-frequency {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Logged today badge */
+    .logged-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      background: rgba(52, 168, 83, 0.1);
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-health-good);
+    }
+
+    .logged-badge svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    /* ============================================
+       SWIPE HINT TOOLTIP
+       ============================================ */
+    .swipe-hint {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-xs);
+      padding: var(--space-sm) var(--space-md);
+      margin: 0 var(--space-md);
+      background: rgba(0, 0, 0, 0.04);
+      border-radius: var(--radius-sm);
+      margin-bottom: var(--space-sm);
+    }
+
+    .swipe-hint-arrow {
+      width: 20px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      animation: swipeHint 1.5s ease-in-out infinite;
+    }
+
+    .swipe-hint-arrow svg {
+      width: 100%;
+      height: 100%;
+      color: var(--color-text-tertiary);
+    }
+
+    @keyframes swipeHint {
+      0%, 100% { transform: translateX(0); opacity: 0.5; }
+      50% { transform: translateX(6px); opacity: 1; }
+    }
+
+    .swipe-hint-text {
+      font-size: var(--font-size-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* ============================================
+       FAB (FLOATING ACTION BUTTON)
+       ============================================ */
+    .fab {
+      position: absolute;
+      bottom: var(--space-lg);
+      right: var(--space-lg);
+      width: 56px;
+      height: 56px;
+      background: var(--color-text-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .fab:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    }
+
+    .fab svg {
+      width: 24px;
+      height: 24px;
+      color: white;
+    }
+
+    /* ============================================
+       EMPTY STATE
+       ============================================ */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2xl);
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      width: 88px;
+      height: 88px;
+      background: linear-gradient(135deg, #F0F4F8 0%, #E8EAED 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-lg);
+      position: relative;
+    }
+
+    /* Empty battery icon */
+    .empty-battery {
+      width: 36px;
+      height: 52px;
+      position: relative;
+    }
+
+    .empty-battery .battery-cap {
+      width: 16px;
+      height: 5px;
+      background: var(--color-text-tertiary);
+    }
+
+    .empty-battery .battery-body {
+      border-color: var(--color-text-tertiary);
+      background: transparent;
+    }
+
+    .empty-state-title {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .empty-state-text {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+      max-width: 240px;
+    }
+
+    .empty-state-button {
+      margin-top: var(--space-lg);
+      padding: var(--space-sm) var(--space-lg);
+      background: var(--color-text-primary);
+      color: white;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .empty-state-button:hover {
+      background: #2D3035;
+      transform: translateY(-1px);
+    }
+
+    /* ============================================
+       SECTION LABELS
+       ============================================ */
+    .mockup-label {
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+      color: #666;
+      text-align: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ============================================
+       ANNOTATIONS
+       ============================================ */
+    .annotations {
+      width: 375px;
+      background: white;
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-md);
+    }
+
+    .annotations h3 {
+      font-size: var(--font-size-base);
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .annotations ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .annotations li {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+      padding-left: var(--space-md);
+      position: relative;
+    }
+
+    .annotations li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 7px;
+      width: 6px;
+      height: 6px;
+      background: var(--color-text-primary);
+      border-radius: 50%;
+    }
+
+    /* Health state indicators in annotations */
+    .health-swatch {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      margin-right: var(--space-xs);
+      vertical-align: middle;
+    }
+
+    .health-swatch.overflow {
+      background: var(--color-health-overflow);
+      box-shadow: 0 0 6px var(--color-overflow-glow);
+    }
+    .health-swatch.good { background: var(--color-health-good); }
+    .health-swatch.warning { background: var(--color-health-warning); }
+    .health-swatch.critical { background: var(--color-health-critical); }
+
+    /* ============================================
+       SWIPE INTERACTION DEMO
+       ============================================ */
+    .mockup-section.interaction-demo {
+      margin-top: var(--space-lg);
+    }
+
+    .interaction-states {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      width: 375px;
+      padding: var(--space-lg);
+      background: white;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+
+    .state-label {
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: var(--space-xs);
+    }
+
+    .demo-row {
+      background: var(--color-bg);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       MAIN STATE - Home with habits
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Home Screen - Battery Health Indicators</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-date">Saturday, Jan 11</div>
+          <h1 class="header-title">Today</h1>
+        </header>
+
+        <!-- Swipe hint -->
+        <div class="swipe-hint">
+          <div class="swipe-hint-arrow">
+            <svg viewBox="0 0 20 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 6H19M19 6L14 1M19 6L14 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="swipe-hint-text">Swipe right to log</span>
+        </div>
+
+        <div class="habit-list">
+
+          <!-- Overflow state (115%) - overcharged, logged today -->
+          <div class="habit-row logged">
+            <div class="swipe-action">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card">
+              <div class="battery-container overflow">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill overflow" style="height: 100%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Morning run</span>
+                  <span class="habit-percentage overflow">115%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                  <span class="logged-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Done
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Good state (85%) - healthy, not logged today -->
+          <div class="habit-row">
+            <div class="swipe-action">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill good" style="height: 85%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Read for 30 min</span>
+                  <span class="habit-percentage good">85%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning state (45%) - needs attention -->
+          <div class="habit-row">
+            <div class="swipe-action">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill warning" style="height: 45%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Meditate</span>
+                  <span class="habit-percentage warning">45%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">3x per week</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Critical state (15%) - about to fail -->
+          <div class="habit-row">
+            <div class="swipe-action">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill critical" style="height: 15%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Practice guitar</span>
+                  <span class="habit-percentage critical">15%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SWIPE INTERACTION STATES
+       ========================================== -->
+  <div class="mockup-section interaction-demo">
+    <div class="mockup-label">Swipe Interaction States</div>
+    <div class="interaction-states">
+
+      <div>
+        <div class="state-label">Idle - Subtle arrow hint</div>
+        <div class="demo-row">
+          <div class="habit-row">
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill good" style="height: 75%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Example habit</span>
+                  <span class="habit-percentage good">75%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="state-label">Swiping - Reveals green action</div>
+        <div class="demo-row">
+          <div class="habit-row swiping">
+            <div class="swipe-action">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span class="swipe-action-text">Log</span>
+            </div>
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill good" style="height: 75%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Example habit</span>
+                  <span class="habit-percentage good">75%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="state-label">Logged - Badge + subtle highlight</div>
+        <div class="demo-row">
+          <div class="habit-row logged">
+            <div class="habit-card">
+              <div class="battery-container">
+                <div class="battery-cap"></div>
+                <div class="battery-body">
+                  <div class="battery-fill good" style="height: 80%;"></div>
+                </div>
+              </div>
+              <div class="habit-content">
+                <div class="habit-header">
+                  <span class="habit-name">Example habit</span>
+                  <span class="habit-percentage good">80%</span>
+                </div>
+                <div class="habit-meta">
+                  <span class="habit-frequency">Daily</span>
+                  <span class="logged-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Done
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       EMPTY STATE
+       ========================================== -->
+  <div class="mockup-section">
+    <div class="mockup-label">Empty State - New User</div>
+    <div class="phone-frame">
+      <div class="screen">
+        <header class="header">
+          <div class="header-date">Saturday, Jan 11</div>
+          <h1 class="header-title">Today</h1>
+        </header>
+
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <div class="empty-battery">
+              <div class="battery-cap"></div>
+              <div class="battery-body"></div>
+            </div>
+          </div>
+          <h2 class="empty-state-title">Charge your habits</h2>
+          <p class="empty-state-text">Add your first habit. New habits start fully charged and drain when you miss targets.</p>
+          <button class="empty-state-button">Add habit</button>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       DESIGN ANNOTATIONS
+       ========================================== -->
+  <div class="annotations">
+    <h3>Design Notes</h3>
+    <ul>
+      <li><span class="health-swatch overflow"></span><strong>Overflow (100%+):</strong> Blue glow effect on battery. "Overcharged" state with pulsing spark animation.</li>
+      <li><span class="health-swatch good"></span><strong>Good (60-100%):</strong> Green fill. Battery is charged and healthy.</li>
+      <li><span class="health-swatch warning"></span><strong>Warning (30-59%):</strong> Amber fill. Battery running low, needs attention.</li>
+      <li><span class="health-swatch critical"></span><strong>Critical (0-29%):</strong> Red fill. Battery nearly empty, habit at risk.</li>
+      <li><strong>Swipe to log:</strong> Swipe right reveals green checkmark. Row snaps back after logging. Arrow hint on right edge suggests swipeability.</li>
+      <li><strong>Logged state:</strong> Green "Done" badge appears. Subtle green gradient on left edge of card. No swipe hint arrow.</li>
+      <li><strong>Typography:</strong> Inter font. 28px title, 15px habit names, 11px metadata.</li>
+      <li><strong>Battery size:</strong> 32x56px. Compact but clearly readable. Cap adds familiar battery silhouette.</li>
+    </ul>
+  </div>
+
+</body>
+</html>

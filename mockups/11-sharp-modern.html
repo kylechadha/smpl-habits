@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=375, initial-scale=1.0">
+  <title>smpl-tracker - Sharp & Modern</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f5;
+      color: #18181b;
+      line-height: 1.5;
+      padding: 32px;
+      min-height: 100vh;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #18181b;
+      margin-bottom: 8px;
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: #71717a;
+      text-align: center;
+      margin-bottom: 40px;
+      font-weight: 500;
+    }
+
+    .mockup-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 48px;
+      justify-content: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .mockup-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #71717a;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    /* Phone Frame - Sharp edges */
+    .phone-frame {
+      width: 375px;
+      height: 720px;
+      background: #ffffff;
+      border-radius: 0;
+      border: 1px solid #18181b;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid #e4e4e7;
+    }
+
+    .status-time {
+      color: #18181b;
+      letter-spacing: 0.5px;
+    }
+
+    .status-icons {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .status-icons svg {
+      width: 16px;
+      height: 16px;
+      fill: #18181b;
+    }
+
+    /* App Header */
+    .app-header {
+      padding: 20px 20px 24px;
+      background: #ffffff;
+      border-bottom: 1px solid #e4e4e7;
+    }
+
+    .app-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #18181b;
+      margin-bottom: 2px;
+      letter-spacing: -1px;
+    }
+
+    .app-date {
+      font-size: 13px;
+      color: #a1a1aa;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    /* Habit List */
+    .habit-list {
+      flex: 1;
+      padding: 0 0 100px;
+      background: #ffffff;
+      overflow-y: auto;
+    }
+
+    /* Habit Row - Sharp, bordered */
+    .habit-row {
+      position: relative;
+      height: 72px;
+      background: #ffffff;
+      border-bottom: 1px solid #e4e4e7;
+      overflow: hidden;
+    }
+
+    .habit-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      background: #ffffff;
+      z-index: 1;
+    }
+
+    .habit-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .habit-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .habit-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #18181b;
+      letter-spacing: -0.3px;
+    }
+
+    .logged-check {
+      width: 20px;
+      height: 20px;
+      background: #0ea5e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logged-check svg {
+      width: 12px;
+      height: 12px;
+      stroke: #ffffff;
+      stroke-width: 3;
+      fill: none;
+    }
+
+    .weekly-pips {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .pip {
+      width: 6px;
+      height: 6px;
+      background: #e4e4e7;
+    }
+
+    .pip.filled {
+      background: #0ea5e9;
+    }
+
+    .pip-label {
+      font-size: 10px;
+      color: #a1a1aa;
+      margin-left: 6px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Health Bar - Thin and precise */
+    .health-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .health-bar-track {
+      flex: 1;
+      height: 3px;
+      background: #f4f4f5;
+      overflow: visible;
+      position: relative;
+    }
+
+    .health-bar-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+      position: relative;
+    }
+
+    /* Health Colors - Flat, no gradients */
+    .health-overflow .health-bar-fill {
+      background: #0ea5e9;
+    }
+
+    .health-green .health-bar-fill {
+      background: #22c55e;
+    }
+
+    .health-yellow .health-bar-fill {
+      background: #eab308;
+    }
+
+    .health-red .health-bar-fill {
+      background: #ef4444;
+    }
+
+    .health-percent {
+      font-size: 12px;
+      font-weight: 700;
+      min-width: 38px;
+      text-align: right;
+      letter-spacing: 0.5px;
+    }
+
+    .health-overflow .health-percent {
+      color: #0ea5e9;
+    }
+
+    .health-green .health-percent {
+      color: #22c55e;
+    }
+
+    .health-yellow .health-percent {
+      color: #eab308;
+    }
+
+    .health-red .health-percent {
+      color: #ef4444;
+    }
+
+    /* Drawer (Backfill) - Dark, sharp */
+    .drawer {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      background: #18181b;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      z-index: 0;
+    }
+
+    .drawer-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .drawer-days {
+      display: flex;
+      gap: 4px;
+    }
+
+    .drawer-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .drawer-day-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: #52525b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .drawer-day.today .drawer-day-label {
+      color: #0ea5e9;
+    }
+
+    .drawer-checkbox {
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid #3f3f46;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .drawer-checkbox:hover {
+      border-color: #52525b;
+    }
+
+    .drawer-checkbox.checked {
+      background: #0ea5e9;
+      border-color: #0ea5e9;
+    }
+
+    .drawer-checkbox svg {
+      width: 14px;
+      height: 14px;
+      stroke: #ffffff;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+    }
+
+    .drawer-checkbox.checked svg {
+      opacity: 1;
+    }
+
+    .drawer-day.today .drawer-checkbox {
+      border-color: #0ea5e9;
+    }
+
+    .drawer-close {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #3f3f46;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .drawer-close svg {
+      width: 14px;
+      height: 14px;
+      stroke: #71717a;
+      stroke-width: 2;
+    }
+
+    /* Drawer Open State */
+    .habit-row.drawer-open .habit-content {
+      transform: translateX(-100%);
+    }
+
+    /* FAB - Sharp square */
+    .fab {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      background: #0ea5e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .fab:hover {
+      background: #0284c7;
+    }
+
+    .fab svg {
+      width: 20px;
+      height: 20px;
+      stroke: #ffffff;
+      stroke-width: 2.5;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 48px 32px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 64px;
+      height: 64px;
+      border: 1px solid #e4e4e7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .empty-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: #a1a1aa;
+      stroke-width: 1.5;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #18181b;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .empty-subtitle {
+      font-size: 13px;
+      color: #71717a;
+      max-width: 220px;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    /* Hint Tooltip */
+    .hint {
+      position: absolute;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #18181b;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 8px 12px;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+
+    .hint::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid #18181b;
+    }
+
+    /* Long Press Menu */
+    .context-menu {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      border: 1px solid #18181b;
+      overflow: hidden;
+      z-index: 50;
+    }
+
+    .context-menu-item {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.2px;
+    }
+
+    .context-menu-item:hover {
+      background: #f4f4f5;
+    }
+
+    .context-menu-item + .context-menu-item {
+      border-top: 1px solid #e4e4e7;
+    }
+
+    .context-menu-item svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .context-menu-item.edit svg {
+      stroke: #71717a;
+    }
+
+    .context-menu-item.delete {
+      color: #ef4444;
+    }
+
+    .context-menu-item.delete svg {
+      stroke: #ef4444;
+    }
+
+    .context-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(24, 24, 27, 0.4);
+      z-index: 40;
+    }
+
+    /* Interaction Hints */
+    .interactions-guide {
+      margin-top: 48px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .guide-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #18181b;
+      margin-bottom: 20px;
+      text-align: center;
+      letter-spacing: -0.5px;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .guide-item {
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      padding: 16px;
+    }
+
+    .guide-gesture {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0ea5e9;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .guide-action {
+      font-size: 13px;
+      color: #52525b;
+      font-weight: 500;
+    }
+
+    /* Color Legend */
+    .color-legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+    }
+
+    .legend-color.blue {
+      background: #0ea5e9;
+    }
+
+    .legend-color.green {
+      background: #22c55e;
+    }
+
+    .legend-color.yellow {
+      background: #eab308;
+    }
+
+    .legend-color.red {
+      background: #ef4444;
+    }
+
+    .legend-label {
+      font-size: 12px;
+      color: #71717a;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="page-title">smpl-tracker</h1>
+  <p class="page-subtitle">Sharp & Modern Style</p>
+
+  <div class="mockup-container">
+    <!-- Main Screen with Habits -->
+    <div class="mockup-section">
+      <div class="section-label">Main View - All States</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <!-- Habit 1: Overflow (115%) - Logged today -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Meditate</span>
+                  <div class="logged-check">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-overflow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="health-percent">115%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 2: Green (85%) - Weekly, 2/3 done -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Exercise</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">2/3</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-green">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 85%;"></div>
+                </div>
+                <span class="health-percent">85%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 3: Yellow (55%) - Drawer Open -->
+          <div class="habit-row drawer-open">
+            <div class="drawer">
+              <div class="drawer-content">
+                <div class="drawer-days">
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Mon</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Tue</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Wed</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Thu</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Fri</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day today">
+                    <span class="drawer-day-label">Sat</span>
+                    <div class="drawer-checkbox checked">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                  <div class="drawer-day">
+                    <span class="drawer-day-label">Sun</span>
+                    <div class="drawer-checkbox">
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                  </div>
+                </div>
+                <div class="drawer-close">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </div>
+            </div>
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Read</span>
+                </div>
+              </div>
+              <div class="health-section health-yellow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 55%;"></div>
+                </div>
+                <span class="health-percent">55%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 4: Red (25%) - Weekly 1/4 done -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Journal</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">1/4</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-red">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 25%;"></div>
+                </div>
+                <span class="health-percent">25%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- Hint -->
+        <div class="hint">Swipe left to backfill past days</div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="mockup-section">
+      <div class="section-label">Empty State</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </div>
+            <h2 class="empty-title">No habits yet</h2>
+            <p class="empty-subtitle">Start building better routines. Tap + to add your first habit.</p>
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Long Press Menu -->
+    <div class="mockup-section">
+      <div class="section-label">Long Press Menu</div>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M18.5 5c.83 0 1.5.67 1.5 1.5v11c0 .83-.67 1.5-1.5 1.5h-13c-.83 0-1.5-.67-1.5-1.5v-11c0-.83.67-1.5 1.5-1.5h13m0-1h-13C4.12 4 3 5.12 3 6.5v11C3 18.88 4.12 20 5.5 20h13c1.38 0 2.5-1.12 2.5-2.5v-11C21 5.12 19.88 4 18.5 4z"/><path d="M22 8v8h1c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1h-1z"/></svg>
+          </div>
+        </div>
+
+        <div class="app-header">
+          <h1 class="app-title">Habits</h1>
+          <p class="app-date">Saturday, Jan 11</p>
+        </div>
+
+        <div class="habit-list">
+          <!-- Habit 1 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Meditate</span>
+                  <div class="logged-check">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-overflow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 100%;"></div>
+                </div>
+                <span class="health-percent">115%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 2 - Selected -->
+          <div class="habit-row" style="opacity: 0.7;">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Exercise</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">2/3</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-green">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 85%;"></div>
+                </div>
+                <span class="health-percent">85%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 3 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Read</span>
+                </div>
+              </div>
+              <div class="health-section health-yellow">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 55%;"></div>
+                </div>
+                <span class="health-percent">55%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Habit 4 -->
+          <div class="habit-row">
+            <div class="habit-content">
+              <div class="habit-main">
+                <div class="habit-left">
+                  <span class="habit-name">Journal</span>
+                  <div class="weekly-pips">
+                    <div class="pip filled"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <div class="pip"></div>
+                    <span class="pip-label">1/4</span>
+                  </div>
+                </div>
+              </div>
+              <div class="health-section health-red">
+                <div class="health-bar-track">
+                  <div class="health-bar-fill" style="width: 25%;"></div>
+                </div>
+                <span class="health-percent">25%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overlay -->
+        <div class="context-overlay"></div>
+
+        <!-- Context Menu -->
+        <div class="context-menu">
+          <div class="context-menu-item edit">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Edit habit
+          </div>
+          <div class="context-menu-item delete">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Delete habit
+          </div>
+        </div>
+
+        <!-- FAB -->
+        <div class="fab">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Color Legend -->
+  <div class="color-legend">
+    <div class="legend-item">
+      <div class="legend-color blue"></div>
+      <span class="legend-label">100%+ Overflow</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color green"></div>
+      <span class="legend-label">70-99% Healthy</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color yellow"></div>
+      <span class="legend-label">40-69% Warning</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-color red"></div>
+      <span class="legend-label">Below 40% Critical</span>
+    </div>
+  </div>
+
+  <!-- Interaction Guide -->
+  <div class="interactions-guide">
+    <h3 class="guide-title">Interaction Patterns</h3>
+    <div class="guide-grid">
+      <div class="guide-item">
+        <div class="guide-gesture">Tap</div>
+        <div class="guide-action">Log habit for today. Tap again to unlog. Checkmark appears instantly.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Swipe Left</div>
+        <div class="guide-action">Opens 7-day drawer for backfilling. Shows Mon-Sun with checkboxes.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Long Press</div>
+        <div class="guide-action">Opens context menu for Edit and Delete actions.</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-gesture">Close Drawer</div>
+        <div class="guide-action">Swipe right or tap the chevron to dismiss backfill view.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
