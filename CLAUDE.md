@@ -74,4 +74,24 @@ Since this is our first Android app, document learnings here:
 
 ## Session Notes
 
-(Record key decisions, context, and progress here to resume sessions)
+### 2026-01-10: Project Kickoff
+- Reviewed opencamp/web process, adapted for this project
+- Completed PM interview, wrote PRD
+
+**Key decisions:**
+- **Decay model**: Habits start at 100%, decay on missed targets (accelerating), recover inversely
+- **Overflow banking**: Extra logs buffer against decay AND display above 100%
+- **Framework**: Flutter for rapid iteration
+- **Storage**: Firebase Firestore (cloud-first, offline support built-in)
+- **Auth**: Google Sign-In via Firebase Auth
+- **Infrastructure**: New Firebase project (same GCP account, separate from opencamp)
+- **Day boundary**: 2am local time
+- **Week start**: Sunday
+- **Frequencies**: Daily or X/week only for v1
+- **Binary logging**: Done/not done, no counts
+
+**Next steps:**
+1. Generate 3-5 design mockups with different visual styles
+2. Pick direction and iterate on UX
+3. Set up Flutter dev environment
+4. Implement

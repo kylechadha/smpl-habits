@@ -1,17 +1,15 @@
 # Backlog
 
 ## In Progress
-- [ ] PM interview to define requirements
-
-## Up Next
-- [ ] Write PRD based on interview
 - [ ] Generate design mockups (3-5 variations)
 
+## Up Next
+- [ ] Pick mockup direction and iterate on UX
+- [ ] Set up Flutter + Firebase dev environment
+- [ ] Create implementation plan
+
 ## Raw Ideas
-- On-device storage with periodic backup
-- Google Drive sync option
-- Git-based backup?
-- Firebase for cloud sync?
+- (none currently)
 
 ## Backlog
 - Android dev environment setup guide
@@ -25,4 +23,5 @@
 - Statistics and streaks
 
 ## Done
+- [x] 2026-01-10: PRD written based on PM interview
 - [x] 2026-01-10: Project initialization (git, CLAUDE.md, docs structure)
