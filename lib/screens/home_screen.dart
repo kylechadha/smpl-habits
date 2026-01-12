@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 import '../providers/habits_provider.dart';
 import '../utils/date_utils.dart';
-import '../widgets/habit_row.dart';
+import '../widgets/habit_row_wrapper.dart';
 import '../widgets/add_habit_modal.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -139,14 +139,8 @@ class HomeScreen extends ConsumerWidget {
       itemCount: habits.length,
       itemBuilder: (context, index) {
         final habit = habits[index];
-        return HabitRow(
+        return HabitRowWrapper(
           habit: habit,
-          isLoggedToday: false, // Implemented in Phase 3
-          weeklyLogsCount: 0, // Implemented in Phase 3
-          health: 100.0, // Implemented in Phase 4
-          onTap: () {
-            // Toggle log - Implemented in Phase 3
-          },
           onLongPress: () {
             // Edit habit - Implemented in Phase 4
           },
