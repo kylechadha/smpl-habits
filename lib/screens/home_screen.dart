@@ -6,6 +6,7 @@ import '../providers/habits_provider.dart';
 import '../utils/date_utils.dart';
 import '../widgets/habit_row_wrapper.dart';
 import '../widgets/add_habit_modal.dart';
+import '../widgets/edit_habit_modal.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -141,9 +142,7 @@ class HomeScreen extends ConsumerWidget {
         final habit = habits[index];
         return HabitRowWrapper(
           habit: habit,
-          onLongPress: () {
-            // Edit habit - Implemented in Phase 4
-          },
+          onLongPress: () => showEditHabitModal(context, habit),
         );
       },
     );

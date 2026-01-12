@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../models/habit.dart';
+import '../providers/health_provider.dart';
 import '../providers/logs_provider.dart';
 import '../utils/date_utils.dart';
 import 'habit_row.dart';
@@ -22,6 +23,7 @@ class HabitRowWrapper extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoggedToday = ref.watch(isLoggedTodayProvider(habit.id));
     final weeklyLogsCount = ref.watch(weeklyLogCountProvider(habit.id));
+    final health = ref.watch(habitHealthProvider(habit));
     final logService = ref.watch(logServiceProvider);
 
     return Slidable(
@@ -39,7 +41,7 @@ class HabitRowWrapper extends ConsumerWidget {
         habit: habit,
         isLoggedToday: isLoggedToday,
         weeklyLogsCount: weeklyLogsCount,
-        health: 100.0, // Implemented in Phase 4
+        health: health,
         onTap: () {
           if (logService != null) {
             logService.toggleLog(habit.id, getCurrentDay());
