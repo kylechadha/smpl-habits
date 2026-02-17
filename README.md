@@ -2,7 +2,7 @@
 
 A simple habit tracker for Android, built with Flutter and Firebase.
 
-Habits have a health percentage that decays when you miss days and recovers when you log. The decay accelerates with consecutive misses, and recovery is faster at lower health. You can bank overflow above 100% by logging extra. It's a small motivational nudge — nothing more.
+Most habit trackers use a "build up" model where you start at 0% and work toward 100%. This creates the wrong mental model — new habits feel like failures from day one. smpl-tracker flips it: habits start at 100% health and decay when you miss days. The decay accelerates with consecutive misses, and recovery is faster at lower health.
 
 ## Features
 
@@ -17,7 +17,7 @@ Habits have a health percentage that decays when you miss days and recovers when
 
 ## How This Was Built
 
-This project follows a documentation-first process. Requirements, design, and architecture were defined before writing code. The full process is documented in [`docs/`](docs/):
+This project follows a documentation-first process. The full process is documented in [`docs/`](docs/):
 
 | Document | Purpose |
 |---|---|
