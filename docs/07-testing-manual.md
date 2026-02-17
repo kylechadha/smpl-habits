@@ -1,6 +1,6 @@
-# Testing Strategy
+# Manual Testing
 
-Manual testing approach for v1 MVP.
+Checklist for v1 MVP verification.
 
 ---
 

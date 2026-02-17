@@ -1,6 +1,6 @@
 # Design Guide: smpl-tracker
 
-Reference mockup: `mockups/13-final-with-add-screen.html`
+Reference mockup: `docs/mockups/13-final-with-add-screen.html`
 
 ---
 

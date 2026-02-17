@@ -12,6 +12,9 @@
 - [x] Phase 5: Polish (sign out, haptic feedback, bug fixes)
 - [x] Code review: Fixed weekly decay bugs, delete ordering
 - [x] Code simplification: Extracted shared form fields
+- [x] Security: Rotated leaked API key, scrubbed git history
+- [x] Drag to reorder habits
+- [x] Dead code removal and config cleanup
 
 ## Icebox (v2+)
 - Dark mode
@@ -19,5 +22,4 @@
 - Home screen widget
 - Daily reminder notifications
 - Statistics and streaks view
-- Drag to reorder habits
 - Subtle animations (checkmark scale-in, health bar transitions)

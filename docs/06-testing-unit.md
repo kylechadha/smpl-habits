@@ -1,6 +1,4 @@
-# Testing Strategy
-
-## Unit Tests
+# Unit Tests
 
 Run all tests: `flutter test`
 
@@ -28,23 +26,4 @@ The `calculateHealth` function accepts an optional `today` parameter for determi
 calculateHealth(habit, logs, today: DateTime(2024, 6, 15));
 ```
 
-## Manual Testing
-
-### Emulator
-- AVD: `smpl_tracker_test` (Pixel 7, API 34, google_apis_playstore ARM64)
-- Boot: `emulator -avd smpl_tracker_test`
-- Install: `adb install -r build/app/outputs/flutter-apk/app-debug.apk`
-
-### Test Checklist
-- [ ] Google Sign-In flow
-- [ ] Sign out and re-sign-in
-- [ ] Create daily habit
-- [ ] Create weekly habit (3x/week)
-- [ ] Toggle log (tap) - checkmark appears, health updates
-- [ ] Un-toggle log - checkmark disappears
-- [ ] Long-press to edit habit
-- [ ] Delete habit from edit modal
-- [ ] Swipe for backfill drawer
-- [ ] Backfill past day checkbox
-- [ ] Empty state when no habits
-- [ ] FAB opens add habit modal
+See also: [Manual Testing](07-testing-manual.md)

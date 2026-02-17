@@ -42,8 +42,5 @@ Features and enhancements deferred from v1 MVP.
 - **Offline indicator** - Show sync status when relevant
 
 ### Testing
-- **Automated tests** - Unit tests for decay algorithm, widget tests
-- **CI/CD pipeline** - Automated builds on push
-
----
-
+- **CI/CD pipeline** — automated builds on push
+- **Integration tests** — end-to-end flows with Firebase emulator

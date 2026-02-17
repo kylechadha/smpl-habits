@@ -228,18 +228,3 @@ service cloud.firestore {
 - Data export (JSON/CSV)
 - iOS build
 
----
-
-## Timeline
-
-Target: **This weekend**
-
-Priority order:
-1. Dev environment setup (Flutter, Android Studio, Firebase CLI)
-2. Firebase project setup (Firestore, Auth, security rules)
-3. Google Sign-In flow
-4. Data model and Firestore integration
-5. Basic CRUD for habits
-6. Logging functionality
-7. Decay algorithm
-8. UI polish based on mockups
