@@ -71,12 +71,9 @@ class HabitService {
     await _habitsCollection.doc(habitId).update(updates);
   }
 
-  /// Delete a habit and all its logs (in batches to handle many logs)
+  /// Delete a habit and all its logs (logs first to avoid orphans)
   Future<void> deleteHabit(String habitId) async {
-    // Delete the habit first
-    await _habitsCollection.doc(habitId).delete();
-
-    // Delete logs in batches of 500 (Firestore batch limit)
+    // Delete logs first to avoid orphaned data if interrupted
     final logsCollection =
         _firestore.collection('users').doc(userId).collection('logs');
     QuerySnapshot<Map<String, dynamic>> snapshot;
@@ -93,6 +90,9 @@ class HabitService {
         await batch.commit();
       }
     } while (snapshot.docs.isNotEmpty);
+
+    // Then delete the habit
+    await _habitsCollection.doc(habitId).delete();
   }
 
   /// Update sort order for multiple habits

@@ -22,7 +22,6 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
               child: Row(
@@ -59,7 +58,6 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            // Habit list
             Expanded(
               child: habitsAsync.when(
                 data: (habits) {

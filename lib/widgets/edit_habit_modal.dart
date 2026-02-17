@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 import '../providers/habits_provider.dart';
+import 'habit_form_fields.dart';
 
 /// Bottom sheet modal for editing an existing habit
 class EditHabitModal extends ConsumerStatefulWidget {
@@ -164,19 +165,8 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE5E7EB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
+              buildDragHandle(),
               const SizedBox(height: 20),
-              // Title row with delete button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -198,190 +188,36 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
                 ],
               ),
               const SizedBox(height: 24),
-              // Name input
-              _buildLabel('NAME'),
+              buildFieldLabel('NAME'),
               const SizedBox(height: 8),
-              _buildNameInput(),
+              buildNameInput(
+                controller: _nameController,
+                onChanged: () => setState(() {}),
+              ),
               const SizedBox(height: 24),
-              // Frequency toggle
-              _buildLabel('FREQUENCY'),
+              buildFieldLabel('FREQUENCY'),
               const SizedBox(height: 8),
-              _buildFrequencyToggle(),
-              // Weekly count picker (if weekly)
+              buildFrequencyToggle(
+                selectedType: _frequencyType,
+                onChanged: (value) => setState(() => _frequencyType = value),
+              ),
               if (_frequencyType == 'weekly') ...[
                 const SizedBox(height: 16),
-                _buildWeeklyPicker(),
+                buildWeeklyPicker(
+                  selectedCount: _weeklyCount,
+                  onChanged: (count) => setState(() => _weeklyCount = count),
+                ),
               ],
               const SizedBox(height: 32),
-              // Save button
-              _buildSaveButton(),
+              buildSaveButton(
+                label: 'Save changes',
+                canSave: _canSave,
+                isLoading: _isLoading,
+                onPressed: _save,
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.inter(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: const Color(0xFF6B7280),
-      ),
-    );
-  }
-
-  Widget _buildNameInput() {
-    return TextField(
-      controller: _nameController,
-      onChanged: (_) => setState(() {}),
-      style: GoogleFonts.inter(
-        fontSize: 17,
-        fontWeight: FontWeight.w500,
-        color: const Color(0xFF1A1A2E),
-      ),
-      decoration: InputDecoration(
-        hintText: 'e.g., Exercise, Read, Meditate',
-        hintStyle: GoogleFonts.inter(
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF9CA3AF),
-        ),
-        filled: true,
-        fillColor: const Color(0xFFF7F8FA),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      ),
-    );
-  }
-
-  Widget _buildFrequencyToggle() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildFrequencyOption('daily', 'Daily'),
-          ),
-          Expanded(
-            child: _buildFrequencyOption('weekly', 'Weekly'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFrequencyOption(String value, String label) {
-    final isSelected = _frequencyType == value;
-    return GestureDetector(
-      onTap: () => setState(() => _frequencyType = value),
-      child: Container(
-        height: 44,
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 4,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: isSelected
-                ? const Color(0xFF1A1A2E)
-                : const Color(0xFF6B7280),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWeeklyPicker() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: List.generate(7, (index) {
-        final count = index + 1;
-        final isSelected = _weeklyCount == count;
-        return GestureDetector(
-          onTap: () => setState(() => _weeklyCount = count),
-          child: Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color(0xFF1A1A2E)
-                  : const Color(0xFFF7F8FA),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            alignment: Alignment.center,
-            child: Text(
-              '$count',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : const Color(0xFF6B7280),
-              ),
-            ),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _canSave && !_isLoading ? _save : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A1A2E),
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: const Color(0xFFE5E7EB),
-          disabledForegroundColor: const Color(0xFF9CA3AF),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-        ),
-        child: _isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Text(
-                'Save changes',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
       ),
     );
   }

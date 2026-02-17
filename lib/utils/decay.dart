@@ -42,8 +42,8 @@ double calculateHealth(Habit habit, List<Log> logs) {
       final weekStart = getWeekStart(date);
       final weekEnd = getWeekEnd(date);
 
-      // Only process on the last day of the week we're examining
-      if (date == weekEnd || (daysAgo == 0 && date.isBefore(weekEnd))) {
+      // Only process on the last day of completed weeks
+      if (date == weekEnd) {
         // Count logs for this week
         final weekStartStr = formatDateForStorage(weekStart);
         final weekEndStr = formatDateForStorage(weekEnd);
@@ -60,7 +60,7 @@ double calculateHealth(Habit habit, List<Log> logs) {
             health = min(maxHealth, health + _recoveryAmount(health) * 0.5);
           }
           consecutiveMisses = 0;
-        } else if (daysAgo < 90 - gracePeriod * 7) {
+        } else if (daysAgo < 90 - gracePeriod) {
           // Missed target - decay based on how short
           final missed = habit.frequencyCount - weekLogs;
           for (int i = 0; i < missed; i++) {

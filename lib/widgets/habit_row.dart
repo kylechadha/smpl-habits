@@ -48,15 +48,12 @@ class HabitRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row: checkmark, name, pips
                 Row(
                   children: [
-                    // Checkmark indicator
                     if (isLoggedToday) ...[
                       _buildCheckmark(),
                       const SizedBox(width: 10),
                     ],
-                    // Habit name
                     Expanded(
                       child: Text(
                         habit.name,
@@ -69,14 +66,10 @@ class HabitRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    // Weekly pips (if weekly habit)
-                    if (habit.isWeekly) ...[
-                      _buildWeeklyPips(),
-                    ],
+                    if (habit.isWeekly) _buildWeeklyPips(),
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Health bar row
                 Row(
                   children: [
                     Expanded(
@@ -121,7 +114,6 @@ class HabitRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Pips
         for (int i = 0; i < habit.frequencyCount; i++) ...[
           Container(
             width: 8,
@@ -136,7 +128,6 @@ class HabitRow extends StatelessWidget {
           if (i < habit.frequencyCount - 1) const SizedBox(width: 4),
         ],
         const SizedBox(width: 6),
-        // Label
         Text(
           '$weeklyLogsCount/${habit.frequencyCount}',
           style: GoogleFonts.inter(
@@ -150,8 +141,7 @@ class HabitRow extends StatelessWidget {
   }
 
   Widget _buildHealthBar() {
-    final displayHealth = health.clamp(0.0, 150.0);
-    final fillWidth = (displayHealth / 100).clamp(0.0, 1.5);
+    final fillWidth = (health.clamp(0.0, 150.0) / 100).clamp(0.0, 1.0);
 
     return Container(
       height: 6,
@@ -161,7 +151,7 @@ class HabitRow extends StatelessWidget {
       ),
       child: FractionallySizedBox(
         alignment: Alignment.centerLeft,
-        widthFactor: fillWidth.clamp(0.0, 1.0),
+        widthFactor: fillWidth,
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
