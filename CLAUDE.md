@@ -18,13 +18,26 @@ Android habit tracker app built with Flutter + Firebase.
 
 ```
 lib/
-├── main.dart, app.dart          # Entry point, auth routing
+├── main.dart                    # Entry point
+├── app.dart                     # Auth routing (sign-in vs home)
+├── firebase_options.dart        # Firebase config (gitignored)
 ├── models/                      # Habit, Log data classes
-├── services/                    # Firestore CRUD wrappers
+├── services/                    # Firestore CRUD (habit_service, log_service)
 ├── providers/                   # Riverpod providers (auth, habits, logs, health)
 ├── utils/                       # Decay algorithm, date helpers
-├── screens/                     # Sign-in, home
-└── widgets/                     # Habit row, modals, backfill drawer, shared form fields
+├── screens/                     # sign_in_screen, home_screen
+└── widgets/                     # habit_row, modals, backfill drawer, form fields
+
+docs/
+├── 01-process.md                # How we work
+├── 02-prd.md                    # Product requirements
+├── 03-design-guide.md           # Visual design spec
+├── 04-system-design.md          # Architecture + phases
+├── 05-future.md                 # Deferred features (v2+)
+├── 06-testing-unit.md           # Unit test strategy
+├── 07-testing-manual.md         # Manual test checklist
+├── backlog.md                   # Task tracking
+└── mockups/                     # HTML design mockups
 ```
 
 ## Key Files
@@ -57,7 +70,7 @@ flutter analyze                    # Lint check
 
 ## Git Workflow
 
-- Work directly on `main` (solo project, no PRs needed)
+- Single `main` branch (solo project, no PRs needed)
 - Conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`
 - Push after every commit
 

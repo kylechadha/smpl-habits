@@ -1,32 +1,40 @@
 # smpl-tracker
 
-Simple habit tracker with decay-based motivation.
+Simple habit tracker with decay-based motivation. Built with Flutter + Firebase, Android only.
 
-## Features (Planned)
+## Features
 
-- Track habits with a decay model (health degrades on misses, recovers on completions)
+- Track daily and weekly habits with a health decay model
+- Health degrades on misses (accelerating), recovers on completions (inverse)
+- Overflow banking — extra logs buffer against decay and display above 100%
 - 2am day boundary for night owls
-- Overflow banking for extra effort
-- Google Sign-In with Firebase backend
+- Backfill past days via swipe drawer
+- Drag to reorder habits
+- Google Sign-In with Firestore backend (offline-first)
 
 ## Development
 
-This is a Flutter app targeting Android.
+```bash
+flutter pub get          # Install dependencies
+flutter run              # Run on device/emulator
+flutter test             # Run tests
+flutter analyze          # Lint check
+flutter build apk --release  # Release APK
+```
+
+## Sideloading
 
 ```bash
-# Install dependencies
-flutter pub get
+# Build release APK
+flutter build apk --release
 
-# Run the app
-flutter run
+# Install via USB (with adb)
+adb install -r build/app/outputs/flutter-apk/app-release.apk
 
-# Run tests
-flutter test
-
-# Analyze code
-flutter analyze
+# Or transfer the APK file to your phone and open it
+# File is at: build/app/outputs/flutter-apk/app-release.apk
 ```
 
 ## License
 
-Proprietary - closed source.
+MIT

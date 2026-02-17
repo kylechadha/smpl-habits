@@ -64,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                   if (habits.isEmpty) {
                     return _buildEmptyState();
                   }
-                  return _buildHabitList(habits);
+                  return _buildHabitList(context, ref, habits);
                 },
                 loading: () => const Center(
                   child: CircularProgressIndicator(),
@@ -145,13 +145,35 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHabitList(List<Habit> habits) {
-    return ListView.builder(
+  Widget _buildHabitList(BuildContext context, WidgetRef ref, List<Habit> habits) {
+    return ReorderableListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 100),
       itemCount: habits.length,
+      proxyDecorator: (child, index, animation) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, child) => Material(
+            elevation: 4,
+            color: Colors.transparent,
+            shadowColor: Colors.black26,
+            child: child,
+          ),
+          child: child,
+        );
+      },
+      onReorder: (oldIndex, newIndex) {
+        if (newIndex > oldIndex) newIndex--;
+        final reordered = List<Habit>.from(habits);
+        final item = reordered.removeAt(oldIndex);
+        reordered.insert(newIndex, item);
+        ref.read(habitServiceProvider)?.reorderHabits(
+          reordered.map((h) => h.id).toList(),
+        );
+      },
       itemBuilder: (context, index) {
         final habit = habits[index];
         return HabitRowWrapper(
+          key: ValueKey(habit.id),
           habit: habit,
           onLongPress: () => showEditHabitModal(context, habit),
         );
