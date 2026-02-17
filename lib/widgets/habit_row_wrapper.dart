@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../models/habit.dart';
@@ -43,9 +44,8 @@ class HabitRowWrapper extends ConsumerWidget {
         weeklyLogsCount: weeklyLogsCount,
         health: health,
         onTap: () {
-          if (logService != null) {
-            logService.toggleLog(habit.id, getCurrentDay());
-          }
+          HapticFeedback.lightImpact();
+          logService?.toggleLog(habit.id, getCurrentDay());
         },
         onLongPress: onLongPress,
       ),
