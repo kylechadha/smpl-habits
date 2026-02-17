@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smpl_tracker/models/habit.dart';
 import 'package:smpl_tracker/models/log.dart';
@@ -364,20 +365,9 @@ DateTime getWeekStartForTest(DateTime date) {
 
 // Expose private functions for testing via wrappers
 double _decayAmountPublic(int consecutiveMisses) {
-  return baseDecayRate * 1.5 * (consecutiveMisses - 1) == 0
-      ? baseDecayRate
-      : baseDecayRate *
-          _pow(decayAcceleration, consecutiveMisses - 1);
+  return baseDecayRate * pow(decayAcceleration, consecutiveMisses - 1);
 }
 
 double _recoveryAmountPublic(double currentHealth) {
   return baseDecayRate * (1 + (100 - currentHealth) / 100);
-}
-
-double _pow(double base, int exponent) {
-  double result = 1;
-  for (int i = 0; i < exponent; i++) {
-    result *= base;
-  }
-  return result;
 }

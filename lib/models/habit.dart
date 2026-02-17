@@ -38,36 +38,4 @@ class Habit {
     );
   }
 
-  /// Convert to Firestore map for create
-  Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'frequency_type': frequencyType,
-      'frequency_count': frequencyCount,
-      'sort_order': sortOrder,
-      'created_at': Timestamp.fromDate(createdAt),
-      'updated_at': Timestamp.fromDate(updatedAt),
-    };
-  }
-
-  /// Create a copy with some fields updated
-  Habit copyWith({
-    String? id,
-    String? name,
-    String? frequencyType,
-    int? frequencyCount,
-    int? sortOrder,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) {
-    return Habit(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      frequencyType: frequencyType ?? this.frequencyType,
-      frequencyCount: frequencyCount ?? this.frequencyCount,
-      sortOrder: sortOrder ?? this.sortOrder,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-    );
-  }
 }

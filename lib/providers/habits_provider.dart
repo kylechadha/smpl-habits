@@ -5,16 +5,9 @@ import 'auth_provider.dart';
 
 /// Provides a stream of the current user's habits
 final habitsProvider = StreamProvider<List<Habit>>((ref) {
-  final authState = ref.watch(authStateProvider);
-
-  return authState.when(
-    data: (user) {
-      if (user == null) return Stream.value([]);
-      return HabitService(user.uid).watchHabits();
-    },
-    loading: () => Stream.value([]),
-    error: (e, s) => Stream.value([]),
-  );
+  final service = ref.watch(habitServiceProvider);
+  if (service == null) return Stream.value([]);
+  return service.watchHabits();
 });
 
 /// Provides the HabitService for the current user
