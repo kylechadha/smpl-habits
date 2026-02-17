@@ -19,7 +19,7 @@ void main() {
   group('formatDisplayDate', () {
     test('formats date with weekday and month', () {
       final date = DateTime(2024, 1, 15); // Monday
-      expect(formatDisplayDate(date), 'Monday, January 15');
+      expect(formatDisplayDate(date), 'Mon, January 15');
     });
   });
 

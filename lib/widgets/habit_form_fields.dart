@@ -138,7 +138,19 @@ Widget buildWeeklyPicker({
   required int selectedCount,
   required ValueChanged<int> onChanged,
 }) {
-  return Row(
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$selectedCount ${selectedCount == 1 ? 'time' : 'times'} per week',
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: const Color(0xFF9CA3AF),
+        ),
+      ),
+      const SizedBox(height: 10),
+      Row(
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     children: List.generate(7, (index) {
       final count = index + 1;
@@ -166,6 +178,8 @@ Widget buildWeeklyPicker({
         ),
       );
     }),
+  ),
+    ],
   );
 }
 
