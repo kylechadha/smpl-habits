@@ -42,6 +42,17 @@ app.*.map.json
 # Firebase config (contains API keys)
 lib/firebase_options.dart
 android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
+
+# Signing keys
+*.jks
+*.keystore
+android/key.properties
+
+# Secrets / env
+.env*
+.secrets*
 
 # Android Studio will place build artifacts here
 /android/app/debug
