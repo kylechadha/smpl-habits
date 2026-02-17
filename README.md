@@ -1,6 +1,6 @@
 # smpl-tracker
 
-A simple habit tracker for Android, built with Flutter and Firebase.
+A simple habit tracker built with Flutter and Firebase.
 
 Most habit trackers use a "build up" model where you start at 0% and work toward 100%. This creates the wrong mental model — new habits feel like failures from day one. smpl-tracker flips it: habits start at 100% health and decay when you miss days. The decay accelerates with consecutive misses, and recovery is faster at lower health.
 
