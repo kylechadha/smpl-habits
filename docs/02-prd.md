@@ -26,7 +26,7 @@ Personal use only. Opinionated design for a single user's workflow.
 - **Missing targets causes accelerating decay** (consecutive misses hurt more)
 - **Recovery mirrors decay** - consistent logging rebuilds health inversely
 - **Can hit 0%** - fully neglected habits fail completely
-- **Overflow banking** - exceeding targets builds buffer against future decay AND displays above 100%
+- **Overflow banking** - exceeding targets builds buffer against future decay AND displays above 100% (capped at 150%)
 
 ### Grace Period
 Based on target frequency:
@@ -51,15 +51,19 @@ Based on target frequency:
 - Manual sort order (drag to reorder)
 
 #### Daily Logging
-- One-tap to log habit for today (exact interaction TBD in mockups)
-- Toggle behavior: re-tap/re-action to undo
-- Backfill: can log for any past date
+- Single tap on habit row to log for today
+- Toggle behavior: tap again to undo
+- Backfill: swipe left to reveal last 7 days, tap any day to toggle
 - Binary logging only (done/not done)
 
 #### Health Display
 - Show current health % for each habit
-- Visual health indicator (style TBD in mockups)
-- Display above 100% when exceeding targets
+- Horizontal progress bar with color coding:
+  - Blue with glow: 100-150% (overflow)
+  - Green: 70-99% (healthy)
+  - Yellow/Amber: 40-69% (warning)
+  - Red: below 40% (critical)
+- Weekly habits show progress dots (e.g., ●●○ for 2/3)
 
 #### Core Algorithm
 - Accelerating decay on missed targets
@@ -126,9 +130,9 @@ Sideload APK or ADB install for v1. Play Store later if needed.
 ```
 {
   id: String (document ID)
-  name: String
+  name: String (max 50 characters)
   frequency_type: "daily" | "weekly"
-  frequency_count: Int (for weekly, e.g., 3 for "3x/week")
+  frequency_count: Int (1-7 for weekly, e.g., 3 for "3x/week")
   sort_order: Int
   created_at: Timestamp
   updated_at: Timestamp
@@ -136,11 +140,11 @@ Sideload APK or ADB install for v1. Play Store later if needed.
 ```
 
 ### Collection: `users/{userId}/logs`
+Use composite document ID: `{habitId}_{YYYY-MM-DD}` for natural uniqueness and idempotent writes.
 ```
 {
-  id: String (document ID)
   habit_id: String (reference)
-  logged_date: String (YYYY-MM-DD format, easier to query)
+  logged_date: String (YYYY-MM-DD format)
   created_at: Timestamp
 }
 ```
@@ -177,28 +181,38 @@ service cloud.firestore {
 4. Access to habit settings/edit
 
 ### Add/Edit Habit
-- Name input
-- Frequency picker (daily, or X times per week)
-- Delete option (with confirmation)
+- Name input (max 50 characters)
+- Frequency picker (daily, or X times per week with 1-7 selector)
+- Delete option with simple confirmation dialog
+- Access via long-press on habit row
 
 ### Settings
 - Sign out option
 - Account info display
 
-### Interaction (to explore in mockups)
-- Log action: tap, swipe, or checkbox - pick during design phase
-- Visual health representation: progress bar, color, number - explore options
+### Interactions (finalized)
+- **Log today**: Single tap on habit row (toggle)
+- **Backfill**: Swipe left reveals 7-day drawer with Mon-Sun checkboxes
+- **Edit/Delete**: Long-press on habit row
+- **Add habit**: Tap FAB, bottom sheet modal appears
+- **Reorder**: Drag to reorder (with drag handles)
 
 ---
 
-## Open Questions (for design phase)
+## Accessibility Requirements
 
-1. Exact log interaction (tap vs swipe vs checkbox)
-2. Visual representation of health (bars, circles, colors, numbers)
-3. How to show overflow/above-100% state
-4. Empty state when no habits
-5. Confirmation flow for delete
-6. Sign-in screen design
+- Minimum 48dp touch targets
+- Color-independent indicators (always show % number alongside color)
+- Semantic labels for screen readers (e.g., "Exercise: 85% health, 2 of 3 this week")
+- Sufficient color contrast
+
+---
+
+## Performance Requirements
+
+- Native splash screen to mask cold start
+- Target: usable in under 1 second (warm start instant, cold start <700ms)
+- Firestore offline persistence enabled by default
 
 ---
 

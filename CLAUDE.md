@@ -21,10 +21,9 @@ We follow a documentation-first approach:
 docs/
 ├── 01-process.md           # How we work (this workflow)
 ├── 02-prd.md               # Product requirements
-├── 03-implementation.md    # System design + build phases (combined, simpler app)
-├── 04-design-guide.md      # Visual design decisions
-├── 05-testing.md           # Testing strategy
-├── 06-future.md            # Post-MVP considerations
+├── 03-design-guide.md      # Visual design decisions
+├── 04-system-design.md     # Architecture + implementation phases
+├── 05-testing.md           # Testing strategy (TBD)
 └── backlog.md              # Kanban-style task tracking
 ```
 
