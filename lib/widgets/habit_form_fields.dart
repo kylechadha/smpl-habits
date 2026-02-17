@@ -34,6 +34,7 @@ Widget buildNameInput({
   return TextField(
     controller: controller,
     onChanged: (_) => onChanged(),
+    maxLength: 50,
     style: GoogleFonts.inter(
       fontSize: 17,
       fontWeight: FontWeight.w500,

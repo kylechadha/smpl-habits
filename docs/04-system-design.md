@@ -277,14 +277,14 @@ Firestore handles sync automatically:
 
 **Goal:** Signed-in user sees empty home screen
 
-- [ ] Flutter project init: `flutter create smpl_tracker`
-- [ ] Firebase project setup in console
-- [ ] Add Firebase config (google-services.json / GoogleService-Info.plist)
-- [ ] Add packages: firebase_core, firebase_auth, google_sign_in
-- [ ] Basic app shell with Riverpod provider scope
-- [ ] Sign-in screen with Google button
-- [ ] Auth state provider, route based on auth
-- [ ] Empty home screen with app header
+- [x] Flutter project init: `flutter create smpl_tracker`
+- [x] Firebase project setup in console
+- [x] Add Firebase config (google-services.json / GoogleService-Info.plist)
+- [x] Add packages: firebase_core, firebase_auth, google_sign_in
+- [x] Basic app shell with Riverpod provider scope
+- [x] Sign-in screen with Google button
+- [x] Auth state provider, route based on auth
+- [x] Empty home screen with app header
 
 **Deliverable:** Can sign in with Google, see "Habits" title and empty state
 
@@ -292,14 +292,14 @@ Firestore handles sync automatically:
 
 **Goal:** Can create habits and see them in list
 
-- [ ] Add cloud_firestore package
-- [ ] Habit model class (with Firestore serialization)
-- [ ] Log model class
-- [ ] HabitService: CRUD operations
-- [ ] Habits list provider (StreamProvider from Firestore)
-- [ ] Home screen: habit list with basic rows
-- [ ] FAB + Add habit modal (name + frequency picker)
-- [ ] Create habit flow working
+- [x] Add cloud_firestore package
+- [x] Habit model class (with Firestore serialization)
+- [x] Log model class
+- [x] HabitService: CRUD operations
+- [x] Habits list provider (StreamProvider from Firestore)
+- [x] Home screen: habit list with basic rows
+- [x] FAB + Add habit modal (name + frequency picker)
+- [x] Create habit flow working
 
 **Deliverable:** Can add habits, they persist across app restarts
 
@@ -307,13 +307,13 @@ Firestore handles sync automatically:
 
 **Goal:** Can log habits for today and past days
 
-- [ ] LogService: toggle log for date
-- [ ] Logs provider (scoped to habit)
-- [ ] Tap habit row → toggles today's log
-- [ ] Logged check mark appears/disappears
-- [ ] Swipe gesture on habit row
-- [ ] Backfill drawer UI (7 day checkboxes)
-- [ ] Drawer toggle functionality
+- [x] LogService: toggle log for date
+- [x] Logs provider (scoped to habit)
+- [x] Tap habit row → toggles today's log
+- [x] Logged check mark appears/disappears
+- [x] Swipe gesture on habit row
+- [x] Backfill drawer UI (7 day checkboxes)
+- [x] Drawer toggle functionality
 
 **Deliverable:** Full logging flow works, persists to Firestore
 
@@ -321,14 +321,14 @@ Firestore handles sync automatically:
 
 **Goal:** Health bars show correct values, UI matches mockups
 
-- [ ] Decay algorithm implementation
-- [ ] Health calculation provider
-- [ ] Health bar colors (blue/green/yellow/red)
-- [ ] Health percentage display
-- [ ] Weekly progress pips for weekly habits
-- [ ] Edit habit (long press → prefilled modal)
-- [ ] Delete habit with confirmation
-- [ ] Drag to reorder
+- [x] Decay algorithm implementation
+- [x] Health calculation provider
+- [x] Health bar colors (blue/green/yellow/red)
+- [x] Health percentage display
+- [x] Weekly progress pips for weekly habits
+- [x] Edit habit (long press → prefilled modal)
+- [x] Delete habit with confirmation
+- [x] Drag to reorder
 
 **Deliverable:** App is functionally complete
 
@@ -336,14 +336,14 @@ Firestore handles sync automatically:
 
 **Goal:** Feels good to use
 
-- [ ] Animations: check mark scale-in, health bar transitions
-- [ ] Haptic feedback on tap
-- [ ] Loading states for async operations
-- [ ] Error handling with snackbars
-- [ ] Empty state illustration/message
-- [ ] Sign out option (settings or profile)
-- [ ] Test on physical device
-- [ ] Build release APK
+- [x] Animations: check mark scale-in, health bar transitions
+- [x] Haptic feedback on tap
+- [x] Loading states for async operations
+- [x] Error handling with snackbars
+- [x] Empty state illustration/message
+- [x] Sign out option (settings or profile)
+- [x] Test on physical device
+- [x] Build release APK
 
 **Deliverable:** Shippable v1
 
@@ -489,17 +489,17 @@ dev_dependencies:
 ### Manual Testing Checklist
 
 Before shipping:
-- [ ] Fresh install sign-in flow
-- [ ] Create daily habit, log today
-- [ ] Create weekly habit, log 3 days
-- [ ] Backfill a past day
-- [ ] Toggle log off/on
-- [ ] Edit habit name
-- [ ] Delete habit
-- [ ] Reorder habits
-- [ ] Kill app, reopen (data persists)
-- [ ] Turn off network, use app, turn on (syncs)
-- [ ] Sign out and back in
+- [x] Fresh install sign-in flow
+- [x] Create daily habit, log today
+- [x] Create weekly habit, log 3 days
+- [x] Backfill a past day
+- [x] Toggle log off/on
+- [x] Edit habit name
+- [x] Delete habit
+- [x] Reorder habits
+- [x] Kill app, reopen (data persists)
+- [x] Turn off network, use app, turn on (syncs)
+- [x] Sign out and back in
 
 ### Device Testing
 

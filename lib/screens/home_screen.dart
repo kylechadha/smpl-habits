@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/habits_provider.dart';
-import '../utils/date_utils.dart';
 import '../widgets/habit_row_wrapper.dart';
 import '../widgets/add_habit_modal.dart';
 import '../widgets/edit_habit_modal.dart';
@@ -32,7 +31,7 @@ class HomeScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Habits',
+                          'smpl',
                           style: GoogleFonts.inter(
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
@@ -41,7 +40,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          formatDisplayDate(getCurrentDay()),
+                          'A simple habit tracker',
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
