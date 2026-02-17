@@ -3,8 +3,7 @@
 Android habit tracker app built with Flutter + Firebase.
 
 ## Project Status
-- **Phase**: v1 complete (Phases 1-5 done)
-- **Next step**: Sideload APK to physical device for daily use
+- **Phase**: v1 complete, in daily use
 
 ## Tech Stack
 
@@ -66,7 +65,7 @@ flutter analyze                    # Lint check
 - Project ID: `smpl-tracker`
 - Console: https://console.firebase.google.com/u/1/project/smpl-tracker
 - Auth: Google Sign-In only (no anonymous)
-- Firestore rules: user-scoped read/write
+- Firestore security rules: user-scoped read/write
 
 ## Git Workflow
 
