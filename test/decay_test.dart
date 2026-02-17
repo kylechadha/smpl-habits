@@ -228,6 +228,55 @@ void main() {
     });
   });
 
+  group('New habit starts at 100%', () {
+    test('brand new daily habit starts at 100', () {
+      final today = DateTime(2024, 6, 15);
+      final habit = Habit(
+        id: 'new',
+        name: 'New',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: today,
+        updatedAt: today,
+      );
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, equals(100.0));
+    });
+
+    test('habit created yesterday with no logs has grace period', () {
+      final today = DateTime(2024, 6, 15);
+      final habit = Habit(
+        id: 'new',
+        name: 'New',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: today.subtract(const Duration(days: 1)),
+        updatedAt: today.subtract(const Duration(days: 1)),
+      );
+      // Grace period is 1 day, so 1 missed day = no decay yet
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, equals(100.0));
+    });
+
+    test('habit created 3 days ago with no logs starts decaying', () {
+      final today = DateTime(2024, 6, 15);
+      final habit = Habit(
+        id: 'new',
+        name: 'New',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: today.subtract(const Duration(days: 3)),
+        updatedAt: today.subtract(const Duration(days: 3)),
+      );
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, lessThan(100));
+      expect(health, greaterThan(0));
+    });
+  });
+
   group('Edge cases', () {
     test('empty log list returns a valid health', () {
       final today = DateTime(2024, 6, 15);

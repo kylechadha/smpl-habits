@@ -19,7 +19,7 @@ String formatDateForStorage(DateTime date) {
 
 /// Format a date for display (e.g., "Saturday, January 11")
 String formatDisplayDate(DateTime date) {
-  return DateFormat('EEE, MMMM d').format(date);
+  return DateFormat('EEEE, MMM d').format(date);
 }
 
 /// Get the start of the current week (Sunday)

@@ -18,22 +18,27 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
   double health = 100.0;
   today ??= getCurrentDay();
   final gracePeriod = habit.isDaily ? gracePeriodDaily : (7 / habit.frequencyCount).ceil();
+  final createdDay = DateTime(habit.createdAt.year, habit.createdAt.month, habit.createdAt.day);
 
   // Walk FORWARD through time (oldest to newest) over 90 days
   int consecutiveMisses = 0;
 
   for (int daysAgo = 89; daysAgo >= 0; daysAgo--) {
     final date = today.subtract(Duration(days: daysAgo));
+    // Skip days before the habit was created
+    if (date.isBefore(createdDay)) continue;
     final dateStr = formatDateForStorage(date);
     final wasLogged = loggedDates.contains(dateStr);
+
+    final daysSinceCreation = date.difference(createdDay).inDays;
 
     if (habit.isDaily) {
       // Daily habit: check each day
       if (wasLogged) {
         health = min(maxHealth, health + _recoveryAmount(health));
         consecutiveMisses = 0;
-      } else if (daysAgo < 90 - gracePeriod) {
-        // Only decay after grace period from start of tracking
+      } else if (daysSinceCreation > gracePeriod) {
+        // Only decay after grace period from creation
         consecutiveMisses++;
         health = max(minHealth, health - _decayAmount(consecutiveMisses));
       }
@@ -60,7 +65,7 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
             health = min(maxHealth, health + _recoveryAmount(health) * 0.5);
           }
           consecutiveMisses = 0;
-        } else if (daysAgo < 90 - gracePeriod) {
+        } else if (daysSinceCreation > gracePeriod) {
           // Missed target - decay based on how short
           final missed = habit.frequencyCount - weekLogs;
           for (int i = 0; i < missed; i++) {
