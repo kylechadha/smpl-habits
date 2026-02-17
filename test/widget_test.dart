@@ -19,7 +19,7 @@ void main() {
     expect(find.text('smpl'), findsOneWidget);
 
     // Verify the tagline is shown
-    expect(find.text('Simple habit tracking'), findsOneWidget);
+    expect(find.text('A simple habit tracker'), findsOneWidget);
 
     // Verify the sign in button is present
     expect(find.text('Sign in with Google'), findsOneWidget);

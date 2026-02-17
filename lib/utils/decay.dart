@@ -11,12 +11,12 @@ const double maxHealth = 150.0;
 const double minHealth = 0.0;
 
 /// Calculate the current health for a habit based on its logs
-double calculateHealth(Habit habit, List<Log> logs) {
+double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
   // Create a set of logged dates for O(1) lookup
   final loggedDates = logs.map((l) => l.loggedDate).toSet();
 
   double health = 100.0;
-  final today = getCurrentDay();
+  today ??= getCurrentDay();
   final gracePeriod = habit.isDaily ? gracePeriodDaily : (7 / habit.frequencyCount).ceil();
 
   // Walk FORWARD through time (oldest to newest) over 90 days
