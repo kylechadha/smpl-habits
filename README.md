@@ -75,4 +75,4 @@ lib/
 
 ---
 
-Built by [Kyle Chadha](https://kylechadha.dev) · [@kylechadha](https://twitter.com/kylechadha)
+Built w/ ❤️ by [Kyle Chadha](https://kylechadha.dev) · [@kylechadha](https://twitter.com/kylechadha)
