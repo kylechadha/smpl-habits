@@ -189,7 +189,7 @@ class _FabLocation extends FloatingActionButtonLocation {
   @override
   Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
     final double x = scaffoldGeometry.scaffoldSize.width - 56 - 20;
-    final double y = scaffoldGeometry.scaffoldSize.height - 56 - 28;
+    final double y = scaffoldGeometry.scaffoldSize.height - 56 - 70;
     return Offset(x, y);
   }
 }

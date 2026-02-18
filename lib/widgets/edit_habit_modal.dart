@@ -21,7 +21,9 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
   late int _weeklyCount;
   bool _isLoading = false;
 
-  bool get _canSave => _nameController.text.trim().isNotEmpty;
+  bool get _canSave =>
+      _nameController.text.trim().isNotEmpty &&
+      _nameController.text.length <= 50;
 
   @override
   void initState() {
