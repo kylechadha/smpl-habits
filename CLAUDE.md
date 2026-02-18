@@ -1,4 +1,4 @@
-# smpl-tracker
+# smpl-habits
 
 Android habit tracker app built with Flutter + Firebase.
 
@@ -77,7 +77,7 @@ flutter analyze                    # Lint check
 
 - Design spec: `docs/03-design-guide.md`
 - Colors: #1A1A2E (primary dark), #10B981 (green), #F59E0B (yellow), #EF4444 (red), #3B82F6 (blue overflow)
-- Font: Inter (all weights via google_fonts)
+- Font: Inter (bundled locally)
 - Background: #F7F8FA
 
 ## Key Decisions

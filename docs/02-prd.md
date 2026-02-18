@@ -1,4 +1,4 @@
-# Product Requirements Document: smpl-tracker
+# Product Requirements Document: smpl-habits
 
 ## Overview
 
