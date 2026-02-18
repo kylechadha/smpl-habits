@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>smpl - App Icon Concepts</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #F7F8FA;
+    color: #1A1A2E;
+    padding: 40px 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6B7280;
+    font-size: 15px;
+    margin-bottom: 48px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 36px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .icons-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .label {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .desc {
+    font-size: 13px;
+    color: #6B7280;
+    text-align: center;
+    max-width: 260px;
+    line-height: 1.4;
+  }
+  .size-label {
+    font-size: 11px;
+    color: #9CA3AF;
+    text-align: center;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>smpl - Icon Concepts</h1>
+<p class="subtitle">6 app icon directions for the habit tracker. Each shown at 192px and 48px.</p>
+
+<div class="grid">
+
+  <!-- 1. "S" Letter Mark -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <text x="96" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="120" font-weight="800" fill="#FFFFFF" letter-spacing="-4">s</text>
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <text x="96" y="128" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="120" font-weight="800" fill="#FFFFFF" letter-spacing="-4">s</text>
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">1. "S" Letter Mark</div>
+    <div class="desc">Bold, rounded lowercase "s" in white on dark. Clean and unmistakable.</div>
+  </div>
+
+  <!-- 2. Health Bar -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <!-- Bar track -->
+          <rect x="32" y="80" width="128" height="32" rx="16" fill="#2A2A4A"/>
+          <!-- Bar fill at ~80% -->
+          <rect x="32" y="80" width="102" height="32" rx="16" fill="#10B981"/>
+          <!-- Clip right side of fill to not round on right when partial -->
+          <rect x="90" y="80" width="44" height="32" fill="#10B981"/>
+          <!-- Re-round the end -->
+          <rect x="118" y="80" width="16" height="32" rx="8" fill="#10B981"/>
+          <!-- Clean up overflow -->
+          <rect x="134" y="80" width="26" height="32" rx="0" fill="#2A2A4A"/>
+          <!-- Simpler approach: just use a clip -->
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <rect x="32" y="80" width="128" height="32" rx="16" fill="#2A2A4A"/>
+          <rect x="32" y="80" width="102" height="32" rx="16" fill="#10B981"/>
+          <rect x="90" y="80" width="44" height="32" fill="#10B981"/>
+          <rect x="118" y="80" width="16" height="32" rx="8" fill="#10B981"/>
+          <rect x="134" y="80" width="26" height="32" rx="0" fill="#2A2A4A"/>
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">2. Health Bar</div>
+    <div class="desc">Game-inspired HP bar at ~80%. Immediately communicates the decay mechanic.</div>
+  </div>
+
+  <!-- 3. Declining Bar Chart -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <!-- 4 bars, tallest to shortest, green to red -->
+          <rect x="36" y="44" width="24" height="104" rx="6" fill="#10B981"/>
+          <rect x="72" y="68" width="24" height="80" rx="6" fill="#10B981"/>
+          <rect x="108" y="92" width="24" height="56" rx="6" fill="#F59E0B"/>
+          <rect x="144" y="116" width="24" height="32" rx="6" fill="#EF4444"/>
+          <!-- Baseline -->
+          <line x1="30" y1="152" x2="174" y2="152" stroke="#2A2A4A" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <rect x="36" y="44" width="24" height="104" rx="6" fill="#10B981"/>
+          <rect x="72" y="68" width="24" height="80" rx="6" fill="#10B981"/>
+          <rect x="108" y="92" width="24" height="56" rx="6" fill="#F59E0B"/>
+          <rect x="144" y="116" width="24" height="32" rx="6" fill="#EF4444"/>
+          <line x1="30" y1="152" x2="174" y2="152" stroke="#2A2A4A" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">3. Declining Bar Chart</div>
+    <div class="desc">Four bars descending from green to red. Shows the decay concept at a glance.</div>
+  </div>
+
+  <!-- 4. Checkmark Pulse -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <!-- Pulse line that includes a checkmark shape -->
+          <polyline
+            points="28,108 52,108 68,108 82,130 106,62 120,108 132,108 142,88 152,108 172,108"
+            fill="none"
+            stroke="#10B981"
+            stroke-width="7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <polyline
+            points="28,108 52,108 68,108 82,130 106,62 120,108 132,108 142,88 152,108 172,108"
+            fill="none"
+            stroke="#10B981"
+            stroke-width="7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">4. Checkmark Pulse</div>
+    <div class="desc">A checkmark shape embedded in a heartbeat pulse line. Habit health, visualized.</div>
+  </div>
+
+  <!-- 5. Circle Progress -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <!-- Track circle -->
+          <circle cx="96" cy="96" r="50" fill="none" stroke="#2A2A4A" stroke-width="12"/>
+          <!-- Progress arc: 85% of circumference = 0.85 * 2 * pi * 50 = 267 -->
+          <!-- Total circumference = 314.16 -->
+          <circle cx="96" cy="96" r="50" fill="none" stroke="#10B981" stroke-width="12"
+            stroke-linecap="round"
+            stroke-dasharray="267 314.16"
+            stroke-dashoffset="0"
+            transform="rotate(-90 96 96)"
+          />
+          <!-- Center "s" -->
+          <text x="96" y="108" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="700" fill="#FFFFFF" letter-spacing="-1">s</text>
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <circle cx="96" cy="96" r="50" fill="none" stroke="#2A2A4A" stroke-width="12"/>
+          <circle cx="96" cy="96" r="50" fill="none" stroke="#10B981" stroke-width="12"
+            stroke-linecap="round"
+            stroke-dasharray="267 314.16"
+            stroke-dashoffset="0"
+            transform="rotate(-90 96 96)"
+          />
+          <text x="96" y="108" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="700" fill="#FFFFFF" letter-spacing="-1">s</text>
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">5. Circle Progress</div>
+    <div class="desc">85% progress ring with a centered "s". Familiar progress UI, distinctly habit-tracker.</div>
+  </div>
+
+  <!-- 6. Stacked Dots -->
+  <div class="card">
+    <div class="icons-row">
+      <div>
+        <svg width="192" height="192" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <!-- 3x3 grid of rounded squares -->
+          <!-- Row 1 -->
+          <rect x="48" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="120" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <!-- Row 2 -->
+          <rect x="48" y="84" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="84" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="120" y="84" width="24" height="24" rx="6" fill="#F59E0B"/>
+          <!-- Row 3 -->
+          <rect x="48" y="120" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="120" width="24" height="24" rx="6" fill="#F59E0B"/>
+          <rect x="120" y="120" width="24" height="24" rx="6" fill="#EF4444"/>
+        </svg>
+        <div class="size-label">192px</div>
+      </div>
+      <div>
+        <svg width="48" height="48" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+          <rect width="192" height="192" rx="48" fill="#1A1A2E"/>
+          <rect x="48" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="120" y="48" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="48" y="84" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="84" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="120" y="84" width="24" height="24" rx="6" fill="#F59E0B"/>
+          <rect x="48" y="120" width="24" height="24" rx="6" fill="#10B981"/>
+          <rect x="84" y="120" width="24" height="24" rx="6" fill="#F59E0B"/>
+          <rect x="120" y="120" width="24" height="24" rx="6" fill="#EF4444"/>
+        </svg>
+        <div class="size-label">48px</div>
+      </div>
+    </div>
+    <div class="label">6. Stacked Dots</div>
+    <div class="desc">3x3 grid of completion dots. Green = done, yellow = slipping, red = missed. Calendar-like.</div>
+  </div>
+
+</div>
+
+</body>
+</html>

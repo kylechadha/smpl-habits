@@ -31,14 +31,14 @@ Widget buildNameInput({
   required TextEditingController controller,
   required VoidCallback onChanged,
 }) {
+  final isOver = controller.text.length > 50;
   return TextField(
     controller: controller,
     onChanged: (_) => onChanged(),
-    maxLength: 50,
     style: GoogleFonts.inter(
       fontSize: 17,
       fontWeight: FontWeight.w500,
-      color: const Color(0xFF1A1A2E),
+      color: isOver ? const Color(0xFFEF4444) : const Color(0xFF1A1A2E),
     ),
     decoration: InputDecoration(
       hintText: 'e.g., Exercise, Read, Meditate',
@@ -55,8 +55,21 @@ Widget buildNameInput({
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+        borderSide: BorderSide(
+          color: isOver ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+          width: 2,
+        ),
       ),
+      enabledBorder: isOver
+          ? OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 2),
+            )
+          : OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     ),
@@ -142,7 +155,7 @@ Widget buildWeeklyPicker({
     crossAxisAlignment: CrossAxisAlignment.end,
     children: [
       Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(7, (index) {
           final count = index + 1;
           final isSelected = selectedCount == count;
@@ -174,7 +187,7 @@ Widget buildWeeklyPicker({
       Text(
         'times per week',
         style: GoogleFonts.inter(
-          fontSize: 13,
+          fontSize: 11,
           fontWeight: FontWeight.w500,
           color: const Color(0xFF9CA3AF),
         ),

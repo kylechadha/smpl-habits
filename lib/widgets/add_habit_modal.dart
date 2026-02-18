@@ -18,7 +18,9 @@ class _AddHabitModalState extends ConsumerState<AddHabitModal> {
   int _weeklyCount = 3;
   bool _isLoading = false;
 
-  bool get _canSave => _nameController.text.trim().isNotEmpty;
+  bool get _canSave =>
+      _nameController.text.trim().isNotEmpty &&
+      _nameController.text.length <= 50;
 
   @override
   void dispose() {
