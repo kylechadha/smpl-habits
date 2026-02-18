@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/habits_provider.dart';
 import 'habit_form_fields.dart';
 
@@ -82,7 +81,7 @@ class _AddHabitModalState extends ConsumerState<AddHabitModal> {
               const SizedBox(height: 20),
               Text(
                 'New habit',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter',
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),

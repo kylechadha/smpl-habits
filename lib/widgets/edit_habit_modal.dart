@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 import '../providers/habits_provider.dart';
 import 'habit_form_fields.dart';
@@ -81,7 +80,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
         ),
         title: Text(
           'Delete habit?',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter',
             fontSize: 18,
             fontWeight: FontWeight.w600,
             color: const Color(0xFF1A1A2E),
@@ -89,7 +88,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
         ),
         content: Text(
           'This will permanently delete "${widget.habit.name}" and all its logs. This cannot be undone.',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter',
             fontSize: 15,
             color: const Color(0xFF6B7280),
           ),
@@ -99,7 +98,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               'Cancel',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF6B7280),
@@ -110,7 +109,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(
               'Delete',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFFEF4444),
@@ -174,7 +173,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
                 children: [
                   Text(
                     'Edit habit',
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1A1A2E),

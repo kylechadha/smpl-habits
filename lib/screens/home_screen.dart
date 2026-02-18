@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/habits_provider.dart';
+import '../providers/logs_provider.dart';
 import '../utils/date_utils.dart';
 import '../widgets/habit_row_wrapper.dart';
 import '../widgets/add_habit_modal.dart';
@@ -33,7 +33,7 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'Habits',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter',
                             fontSize: 32,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF1A1A2E),
@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           formatDisplayDate(getCurrentDay()),
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter',
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF9CA3AF),
@@ -63,6 +63,16 @@ class HomeScreen extends ConsumerWidget {
                 data: (habits) {
                   if (habits.isEmpty) {
                     return _buildEmptyState();
+                  }
+                  // Wait for all habit log streams to have data before showing
+                  final allLogsReady = habits.every((h) {
+                    final logsAsync = ref.watch(habitLogsProvider(h.id));
+                    return logsAsync.hasValue;
+                  });
+                  if (!allLogsReady) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
                   }
                   return _buildHabitList(context, ref, habits);
                 },
@@ -124,7 +134,7 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               'No habits yet',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF6B7280),
@@ -133,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               'Tap + to add your first habit',
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
                 color: const Color(0xFF9CA3AF),

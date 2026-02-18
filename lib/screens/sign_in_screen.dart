@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 
 class SignInScreen extends ConsumerStatefulWidget {
@@ -49,7 +48,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
             children: [
               Text(
                 'smpl',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter',
                   fontSize: 48,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
@@ -59,7 +58,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
               const SizedBox(height: 8),
               Text(
                 'A simple habit tracker',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter',
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF6B7280),
@@ -76,7 +75,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   ),
                   child: Text(
                     _error!,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(fontFamily: 'Inter',
                       fontSize: 14,
                       color: const Color(0xFFEF4444),
                     ),
@@ -110,7 +109,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                         )
                       : Text(
                           'Sign in with Google',
-                          style: GoogleFonts.inter(
+                          style: TextStyle(fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
