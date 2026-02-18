@@ -1,6 +1,6 @@
 # Process
 
-How we build smpl-tracker.
+How we build smpl-habits.
 
 ## Philosophy
 

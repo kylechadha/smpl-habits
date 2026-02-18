@@ -1,4 +1,4 @@
-# Design Guide: smpl-tracker
+# Design Guide: smpl-habits
 
 Reference mockup: `docs/mockups/13-final-with-add-screen.html`
 
