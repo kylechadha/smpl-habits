@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/logs_provider.dart';
 import '../services/log_service.dart';
 import '../utils/date_utils.dart';
@@ -69,7 +68,7 @@ class BackfillDrawer extends ConsumerWidget {
         children: [
           Text(
             dayLabel,
-            style: GoogleFonts.inter(
+            style: TextStyle(fontFamily: 'Inter',
               fontSize: 10,
               fontWeight: FontWeight.w600,
               color: isToday

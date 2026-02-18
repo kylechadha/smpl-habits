@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Shared form widgets used by both add and edit habit modals
 
@@ -19,7 +18,7 @@ Widget buildDragHandle() {
 Widget buildFieldLabel(String text) {
   return Text(
     text,
-    style: GoogleFonts.inter(
+    style: TextStyle(fontFamily: 'Inter',
       fontSize: 13,
       fontWeight: FontWeight.w600,
       color: const Color(0xFF6B7280),
@@ -35,14 +34,14 @@ Widget buildNameInput({
   return TextField(
     controller: controller,
     onChanged: (_) => onChanged(),
-    style: GoogleFonts.inter(
+    style: TextStyle(fontFamily: 'Inter',
       fontSize: 17,
       fontWeight: FontWeight.w500,
       color: isOver ? const Color(0xFFEF4444) : const Color(0xFF1A1A2E),
     ),
     decoration: InputDecoration(
       hintText: 'e.g., Exercise, Read, Meditate',
-      hintStyle: GoogleFonts.inter(
+      hintStyle: TextStyle(fontFamily: 'Inter',
         fontSize: 17,
         fontWeight: FontWeight.w500,
         color: const Color(0xFF9CA3AF),
@@ -135,7 +134,7 @@ Widget _buildFrequencyOption({
       alignment: Alignment.center,
       child: Text(
         label,
-        style: GoogleFonts.inter(
+        style: TextStyle(fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: isSelected
@@ -173,7 +172,7 @@ Widget buildWeeklyPicker({
               alignment: Alignment.center,
               child: Text(
                 '$count',
-                style: GoogleFonts.inter(
+                style: TextStyle(fontFamily: 'Inter',
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: isSelected ? Colors.white : const Color(0xFF6B7280),
@@ -186,7 +185,7 @@ Widget buildWeeklyPicker({
       const SizedBox(height: 8),
       Text(
         'times per week',
-        style: GoogleFonts.inter(
+        style: TextStyle(fontFamily: 'Inter',
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: const Color(0xFF9CA3AF),
@@ -227,7 +226,7 @@ Widget buildSaveButton({
             )
           : Text(
               label,
-              style: GoogleFonts.inter(
+              style: TextStyle(fontFamily: 'Inter',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),

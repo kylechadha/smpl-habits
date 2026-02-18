@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/habit.dart';
 
 /// A single habit card showing name and health bar
@@ -56,7 +55,7 @@ class HabitRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         habit.name,
-                        style: GoogleFonts.inter(
+                        style: TextStyle(fontFamily: 'Inter',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1A1A2E),
@@ -77,7 +76,7 @@ class HabitRow extends StatelessWidget {
                     const SizedBox(width: 12),
                     Text(
                       '${health.round()}%',
-                      style: GoogleFonts.inter(
+                      style: TextStyle(fontFamily: 'Inter',
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: _getHealthColor(),
@@ -129,7 +128,7 @@ class HabitRow extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           '$weeklyLogsCount/${habit.frequencyCount}',
-          style: GoogleFonts.inter(
+          style: TextStyle(fontFamily: 'Inter',
             fontSize: 11,
             fontWeight: FontWeight.w500,
             color: const Color(0xFF9CA3AF),
