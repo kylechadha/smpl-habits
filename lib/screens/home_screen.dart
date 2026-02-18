@@ -104,7 +104,7 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: const _FabLocation(),
     );
   }
 
@@ -179,5 +179,17 @@ class HomeScreen extends ConsumerWidget {
         );
       },
     );
+  }
+}
+
+/// Positions the FAB to align with card content (12px margin + 16px padding = 28px from edge)
+class _FabLocation extends FloatingActionButtonLocation {
+  const _FabLocation();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final double x = scaffoldGeometry.scaffoldSize.width - 56 - 20;
+    final double y = scaffoldGeometry.scaffoldSize.height - 56 - 28;
+    return Offset(x, y);
   }
 }

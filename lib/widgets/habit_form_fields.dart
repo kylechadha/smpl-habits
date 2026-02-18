@@ -123,7 +123,7 @@ Widget _buildFrequencyOption({
       child: Text(
         label,
         style: GoogleFonts.inter(
-          fontSize: 15,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
           color: isSelected
               ? const Color(0xFF1A1A2E)
@@ -139,46 +139,46 @@ Widget buildWeeklyPicker({
   required ValueChanged<int> onChanged,
 }) {
   return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.end,
     children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(7, (index) {
+          final count = index + 1;
+          final isSelected = selectedCount == count;
+          return GestureDetector(
+            onTap: () => onChanged(count),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF1A1A2E)
+                    : const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                '$count',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : const Color(0xFF6B7280),
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+      const SizedBox(height: 8),
       Text(
-        '$selectedCount ${selectedCount == 1 ? 'time' : 'times'} per week',
+        'times per week',
         style: GoogleFonts.inter(
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: const Color(0xFF9CA3AF),
         ),
       ),
-      const SizedBox(height: 10),
-      Row(
-    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    children: List.generate(7, (index) {
-      final count = index + 1;
-      final isSelected = selectedCount == count;
-      return GestureDetector(
-        onTap: () => onChanged(count),
-        child: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFF1A1A2E)
-                : const Color(0xFFF7F8FA),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            '$count',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : const Color(0xFF6B7280),
-            ),
-          ),
-        ),
-      );
-    }),
-  ),
     ],
   );
 }

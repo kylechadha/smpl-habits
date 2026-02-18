@@ -183,6 +183,7 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
                     icon: const Icon(
                       Icons.delete_outline,
                       color: Color(0xFFEF4444),
+                      size: 26,
                     ),
                   ),
                 ],
