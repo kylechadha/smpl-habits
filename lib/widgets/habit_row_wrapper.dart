@@ -30,8 +30,10 @@ class HabitRowWrapper extends ConsumerWidget {
     return Slidable(
       key: ValueKey(habit.id),
       endActionPane: ActionPane(
-        motion: const DrawerMotion(),
-        extentRatio: 0.7,
+        motion: const BehindMotion(),
+        extentRatio: 1.0,
+        openThreshold: 0.15,
+        closeThreshold: 0.15,
         children: [
           Expanded(
             child: BackfillDrawer(habitId: habit.id),
