@@ -66,6 +66,7 @@ flutter analyze                    # Lint check
 - Console: https://console.firebase.google.com/u/1/project/smpl-tracker
 - Auth: Google Sign-In only (no anonymous)
 - Firestore security rules: user-scoped read/write
+- **Note**: Firebase project ID, Android package (`com.kylechadha.smpl_tracker`), and Dart package remain `smpl_tracker` — renaming would break Firebase config, signing, and Play Store identity. Only the GitHub repo and docs use `smpl-habits`.
 
 ## Git Workflow
 

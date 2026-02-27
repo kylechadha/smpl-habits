@@ -15,6 +15,11 @@ final logServiceProvider = Provider<LogService?>((ref) {
   );
 });
 
+/// Optimistic overrides for today's log state, keyed by habitId.
+/// null = no override (use Firestore stream). true/false = optimistic state.
+final optimisticLogOverrideProvider =
+    StateProvider<Map<String, bool>>((ref) => {});
+
 /// Provides a stream of logs for a specific habit
 final habitLogsProvider =
     StreamProvider.family<List<Log>, String>((ref, habitId) {
@@ -25,31 +30,61 @@ final habitLogsProvider =
 
 /// Check if a habit is logged today
 final isLoggedTodayProvider = Provider.family<bool, String>((ref, habitId) {
+  final overrides = ref.watch(optimisticLogOverrideProvider);
   final logsAsync = ref.watch(habitLogsProvider(habitId));
   final todayStr = formatDateForStorage(getCurrentDay());
 
   return logsAsync.when(
-    data: (logs) => logs.any((log) => log.loggedDate == todayStr),
-    loading: () => false,
-    error: (e, s) => false,
+    data: (logs) {
+      final firestoreValue = logs.any((log) => log.loggedDate == todayStr);
+      // If override matches Firestore, clear it (sync confirmed)
+      if (overrides.containsKey(habitId) &&
+          overrides[habitId] == firestoreValue) {
+        Future.microtask(() {
+          ref.read(optimisticLogOverrideProvider.notifier).update(
+            (state) => Map.of(state)..remove(habitId),
+          );
+        });
+      }
+      // Override takes precedence while active
+      return overrides[habitId] ?? firestoreValue;
+    },
+    loading: () => overrides[habitId] ?? false,
+    error: (e, s) => overrides[habitId] ?? false,
   );
 });
 
 /// Get weekly log count for a habit
 final weeklyLogCountProvider = Provider.family<int, String>((ref, habitId) {
+  final overrides = ref.watch(optimisticLogOverrideProvider);
   final logsAsync = ref.watch(habitLogsProvider(habitId));
   final today = getCurrentDay();
   final weekStart = getWeekStart(today);
   final weekEnd = getWeekEnd(today);
   final weekStartStr = formatDateForStorage(weekStart);
   final weekEndStr = formatDateForStorage(weekEnd);
+  final todayStr = formatDateForStorage(today);
 
   return logsAsync.when(
-    data: (logs) => logs
-        .where((log) =>
-            log.loggedDate.compareTo(weekStartStr) >= 0 &&
-            log.loggedDate.compareTo(weekEndStr) <= 0)
-        .length,
+    data: (logs) {
+      int count = logs
+          .where((log) =>
+              log.loggedDate.compareTo(weekStartStr) >= 0 &&
+              log.loggedDate.compareTo(weekEndStr) <= 0)
+          .length;
+      // Adjust count based on optimistic override for today
+      if (overrides.containsKey(habitId)) {
+        final todayInWeek = todayStr.compareTo(weekStartStr) >= 0 &&
+            todayStr.compareTo(weekEndStr) <= 0;
+        if (todayInWeek) {
+          final wasLoggedInFirestore =
+              logs.any((log) => log.loggedDate == todayStr);
+          if (overrides[habitId]! && !wasLoggedInFirestore) count++;
+          if (!overrides[habitId]! && wasLoggedInFirestore) count--;
+        }
+      }
+      return count.clamp(0, 7);
+    },
     loading: () => 0,
     error: (e, s) => 0,
   );

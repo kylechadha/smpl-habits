@@ -7,10 +7,11 @@ import 'date_utils.dart';
 const int gracePeriodDaily = 1;
 const double baseDecayRate = 5.0;
 const double decayAcceleration = 1.5;
-const double maxHealth = 150.0;
+const double maxHealth = 100.0;
 const double minHealth = 0.0;
 
-/// Calculate the current health for a habit based on its logs
+/// Calculate the current health for a habit based on its logs.
+/// [today] can be provided for testing; defaults to getCurrentDay().
 double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
   // Create a set of logged dates for O(1) lookup
   final loggedDates = logs.map((l) => l.loggedDate).toSet();
@@ -43,13 +44,12 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
         health = max(minHealth, health - _decayAmount(consecutiveMisses));
       }
     } else {
-      // Weekly habit: check at end of each week
+      // Weekly habit: check at end of each week + mid-week provisional decay
       final weekStart = getWeekStart(date);
       final weekEnd = getWeekEnd(date);
 
-      // Only process on the last day of completed weeks
       if (date == weekEnd) {
-        // Count logs for this week
+        // Completed week: evaluate fully
         final weekStartStr = formatDateForStorage(weekStart);
         final weekEndStr = formatDateForStorage(weekEnd);
         final weekLogs = logs.where((log) =>
@@ -57,13 +57,8 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
             log.loggedDate.compareTo(weekEndStr) <= 0).length;
 
         if (weekLogs >= habit.frequencyCount) {
-          // Met target - recover
-          final overflowLogs = weekLogs - habit.frequencyCount;
+          // Met target - recover (no bonus for extra logs)
           health = min(maxHealth, health + _recoveryAmount(health));
-          // Extra logs add bonus recovery
-          for (int i = 0; i < overflowLogs; i++) {
-            health = min(maxHealth, health + _recoveryAmount(health) * 0.5);
-          }
           consecutiveMisses = 0;
         } else if (daysSinceCreation > gracePeriod) {
           // Missed target - decay based on how short
@@ -71,6 +66,32 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
           for (int i = 0; i < missed; i++) {
             consecutiveMisses++;
             health = max(minHealth, health - _decayAmount(consecutiveMisses) * 0.5);
+          }
+        }
+      } else if (daysAgo == 0 && date.isAfter(weekStart)) {
+        // Current incomplete week: apply provisional mid-week penalty
+        final weekStartStr = formatDateForStorage(weekStart);
+        final todayStr = formatDateForStorage(date);
+        final weekLogs = logs.where((log) =>
+            log.loggedDate.compareTo(weekStartStr) >= 0 &&
+            log.loggedDate.compareTo(todayStr) <= 0).length;
+
+        if (weekLogs >= habit.frequencyCount) {
+          // Already met target mid-week - recover
+          health = min(maxHealth, health + _recoveryAmount(health));
+          consecutiveMisses = 0;
+        } else {
+          // Behind pace: apply small provisional penalty
+          // Expected logs by now, proportional to how far through the week
+          final daysElapsed = date.difference(weekStart).inDays + 1;
+          final expectedLogs = habit.frequencyCount * daysElapsed / 7.0;
+          final shortfall = (expectedLogs - weekLogs).clamp(0.0, habit.frequencyCount.toDouble());
+
+          if (shortfall > 0) {
+            // Penalty proportional to shortfall — higher frequency = more expected
+            // = larger shortfall = more decay. Scaled gently (0.15x base rate).
+            final penalty = shortfall * baseDecayRate * 0.15;
+            health = max(minHealth, health - penalty);
           }
         }
       }
