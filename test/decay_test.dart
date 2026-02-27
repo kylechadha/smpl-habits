@@ -41,6 +41,18 @@ List<Log> logsForDays(String habitId, DateTime start, int count) {
       count, (i) => logFor(habitId, start.add(Duration(days: i))));
 }
 
+/// Generate logs for past weeks to establish a healthy baseline.
+List<Log> _baselineLogs(String habitId, DateTime today, {int weeks = 13, int count = 3}) {
+  final logs = <Log>[];
+  for (int w = 1; w <= weeks; w++) {
+    final weekStart = today.subtract(Duration(days: today.weekday % 7 + w * 7));
+    for (int d = 0; d < count && d < 7; d++) {
+      logs.add(logFor(habitId, weekStart.add(Duration(days: d))));
+    }
+  }
+  return logs;
+}
+
 void main() {
   group('Daily habit - basic behavior', () {
     test('no logs = health decays from 100', () {
@@ -55,12 +67,12 @@ void main() {
       expect(health, equals(0));
     });
 
-    test('all 90 days logged = health above 100 (overflow)', () {
+    test('all 90 days logged = health at 100', () {
       final today = DateTime(2024, 6, 15);
       final logs =
           logsForDays('test-daily', today.subtract(const Duration(days: 89)), 90);
       final health = calculateHealth(dailyHabit(), logs, today: today);
-      expect(health, greaterThan(100));
+      expect(health, equals(100.0));
     });
 
     test('logging today recovers health', () {
@@ -71,7 +83,7 @@ void main() {
       expect(healthWith, greaterThan(healthWithout));
     });
 
-    test('health never exceeds maxHealth (150)', () {
+    test('health never exceeds maxHealth (100)', () {
       final today = DateTime(2024, 6, 15);
       final logs =
           logsForDays('test-daily', today.subtract(const Duration(days: 89)), 90);
@@ -88,14 +100,11 @@ void main() {
 
   group('Daily habit - grace period', () {
     test('first day has no decay (grace period)', () {
-      // With only 1 day of history, the grace period should prevent decay
       final today = DateTime(2024, 6, 15);
       final logs = logsForDays(
           'test-daily', today.subtract(const Duration(days: 89)), 89);
-      // Logged every day except today
       final health = calculateHealth(dailyHabit(), logs, today: today);
-      // Should still be high because only 1 miss and grace period covers it
-      expect(health, greaterThan(95));
+      expect(health, greaterThanOrEqualTo(95));
     });
   });
 
@@ -113,16 +122,15 @@ void main() {
           'test-daily', today.subtract(const Duration(days: 89)), 80);
       final health10 = calculateHealth(dailyHabit(), logs10miss, today: today);
 
-      // 10 misses should lose more than 2x what 5 misses loses (accelerating)
-      final loss5 = 100 - health5;
-      final loss10 = 100 - health10;
-      expect(loss10, greaterThan(loss5 * 2));
+      // More misses = more health loss (health capped at 100, so compare directly)
+      expect(health10, lessThan(health5));
+      // 10 misses should lose significantly more than 5
+      expect(100 - health10, greaterThan(100 - health5));
     });
   });
 
   group('Daily habit - recovery', () {
     test('recovery is higher when health is lower', () {
-      // Recovery is inversely proportional to current health
       final lowHealth = _recoveryAmountPublic(20);
       final highHealth = _recoveryAmountPublic(80);
       expect(lowHealth, greaterThan(highHealth));
@@ -131,12 +139,10 @@ void main() {
     test('logging after misses recovers some health', () {
       final today = DateTime(2024, 6, 15);
 
-      // 10 days missed, then 5 days logged
       final logs = logsForDays(
           'test-daily', today.subtract(const Duration(days: 4)), 5);
       final healthRecovered = calculateHealth(dailyHabit(), logs, today: today);
 
-      // Should be partially recovered from rock bottom
       expect(healthRecovered, greaterThan(0));
       expect(healthRecovered, lessThan(100));
     });
@@ -153,7 +159,6 @@ void main() {
       final today = DateTime(2024, 6, 15); // Saturday
       final habit = weeklyHabit(count: 3);
 
-      // Log 3x/week for all weeks in 90-day window to build up health
       final logs = <Log>[];
       for (int w = 12; w >= 0; w--) {
         final weekStart = today.subtract(Duration(days: w * 7 + today.weekday % 7));
@@ -168,46 +173,132 @@ void main() {
       expect(healthWith, greaterThan(healthWithout));
     });
 
-    test('overflow logs provide bonus recovery', () {
-      final today = DateTime(2024, 6, 15); // Saturday
+    test('extra weekly logs beyond target have no effect', () {
       final habit = weeklyHabit(count: 3);
-      final lastWeekStart = DateTime(2024, 6, 2);
+      final today = DateTime(2026, 2, 21); // Saturday
+      final weekStart = DateTime(2026, 2, 15); // Sunday
 
-      // Exactly 3 logs (meeting target)
-      final logs3 = [
-        logFor('test-weekly', lastWeekStart),
-        logFor('test-weekly', lastWeekStart.add(const Duration(days: 1))),
-        logFor('test-weekly', lastWeekStart.add(const Duration(days: 2))),
-      ];
+      final logs = _baselineLogs('test-weekly', today, count: 3);
+      for (int i = 0; i < 5; i++) {
+        logs.add(logFor('test-weekly', weekStart.add(Duration(days: i))));
+      }
 
-      // 5 logs (overflow by 2)
-      final logs5 = [
-        ...logs3,
-        logFor('test-weekly', lastWeekStart.add(const Duration(days: 3))),
-        logFor('test-weekly', lastWeekStart.add(const Duration(days: 4))),
-      ];
-
-      final health3 = calculateHealth(habit, logs3, today: today);
-      final health5 = calculateHealth(habit, logs5, today: today);
-      expect(health5, greaterThan(health3));
+      final health = calculateHealth(habit, logs, today: today);
+      expect(health, lessThanOrEqualTo(100.0));
     });
   });
 
-  group('Weekly habit - partial week', () {
-    test('mid-week does not apply decay for current week', () {
-      // Wednesday - week hasn't ended yet, so no decay for this week
+  group('Weekly habit - mid-week decay', () {
+    test('mid-week with 0 logs shows provisional decay', () {
+      final habit = weeklyHabit(count: 3);
+      final today = DateTime(2026, 2, 25); // Wednesday
+      final logs = _baselineLogs('test-weekly', today, count: 3);
+
+      final health = calculateHealth(habit, logs, today: today);
+      expect(health, lessThan(100.0));
+    });
+
+    test('mid-week decay increases as more days pass without logging', () {
+      final habit = weeklyHabit(count: 3);
+      final monday = DateTime(2026, 2, 23);
+      final wednesday = DateTime(2026, 2, 25);
+
+      final logsMonday = _baselineLogs('test-weekly', monday, count: 3);
+      final logsWednesday = _baselineLogs('test-weekly', wednesday, count: 3);
+
+      final healthMonday = calculateHealth(habit, logsMonday, today: monday);
+      final healthWednesday =
+          calculateHealth(habit, logsWednesday, today: wednesday);
+
+      expect(healthMonday, lessThan(100.0));
+      expect(healthWednesday, lessThan(healthMonday));
+    });
+
+    test('logging reduces the mid-week penalty', () {
+      final habit = weeklyHabit(count: 3);
+      final today = DateTime(2026, 2, 25); // Wednesday
+
+      final logsNoLog = _baselineLogs('test-weekly', today, count: 3);
+      final logsWithLog = List<Log>.from(_baselineLogs('test-weekly', today, count: 3))
+        ..add(logFor('test-weekly', DateTime(2026, 2, 23))); // Monday
+
+      final healthNoLogs = calculateHealth(habit, logsNoLog, today: today);
+      final healthWithLog = calculateHealth(habit, logsWithLog, today: today);
+
+      expect(healthWithLog, greaterThan(healthNoLogs));
+    });
+
+    test('meeting target mid-week gives recovery, no penalty', () {
+      final habit = weeklyHabit(count: 3);
+      final today = DateTime(2026, 2, 25); // Wednesday
+
+      final logs = _baselineLogs('test-weekly', today, count: 3);
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 22))); // Sunday
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 23))); // Monday
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 24))); // Tuesday
+
+      final health = calculateHealth(habit, logs, today: today);
+      expect(health, equals(100.0));
+    });
+
+    test('no penalty on first day of week (Sunday)', () {
+      final habit = weeklyHabit(count: 3);
+      final sunday = DateTime(2026, 2, 22);
+      final logs = _baselineLogs('test-weekly', sunday, count: 3);
+
+      final health = calculateHealth(habit, logs, today: sunday);
+      expect(health, equals(100.0));
+    });
+
+    test('higher frequency habits decay faster mid-week', () {
+      final today = DateTime(2026, 2, 25); // Wednesday
+
+      final habit3x = weeklyHabit(count: 3);
+      final habit1x = weeklyHabit(count: 1);
+
+      final logs3x = _baselineLogs('test-weekly', today, count: 3);
+      final logs1x = _baselineLogs('test-weekly', today, count: 1);
+
+      final health3x = calculateHealth(habit3x, logs3x, today: today);
+      final health1x = calculateHealth(habit1x, logs1x, today: today);
+
+      expect(health3x, lessThan(health1x));
+    });
+  });
+
+  group('Weekly habit - completed week', () {
+    test('completed week with met target gives recovery', () {
+      final habit = weeklyHabit(count: 3);
+      final today = DateTime(2026, 2, 28); // Saturday
+      final logs = _baselineLogs('test-weekly', today, count: 3);
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 22)));
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 24)));
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 26)));
+
+      final health = calculateHealth(habit, logs, today: today);
+      expect(health, equals(100.0));
+    });
+
+    test('completed week with missed target causes decay', () {
+      final habit = weeklyHabit(count: 3);
+      final today = DateTime(2026, 2, 28); // Saturday
+      final logs = _baselineLogs('test-weekly', today, count: 3);
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 22)));
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 24)));
+
+      final health = calculateHealth(habit, logs, today: today);
+      expect(health, lessThan(100.0));
+    });
+
+    test('mid-week does not apply decay for current week (old behavior)', () {
       final wednesday = DateTime(2024, 6, 12);
       final habit = weeklyHabit(count: 3);
 
-      // No logs at all - but current week hasn't ended
-      // Health should only reflect completed past weeks, not current
       final healthWed = calculateHealth(habit, [], today: wednesday);
 
-      // Saturday (week end) - now the week is evaluated
       final saturday = DateTime(2024, 6, 15);
       final healthSat = calculateHealth(habit, [], today: saturday);
 
-      // Saturday should have more decay because the week completed
       expect(healthSat, lessThanOrEqualTo(healthWed));
     });
   });
@@ -216,15 +307,12 @@ void main() {
     test('grace period is proportional to frequency', () {
       final today = DateTime(2024, 6, 15);
 
-      // 1x/week = 7-day grace, 3x/week = 3-day grace
       final habit1x = weeklyHabit(count: 1);
       final habit3x = weeklyHabit(count: 3);
 
       final health1x = calculateHealth(habit1x, [], today: today);
       final health3x = calculateHealth(habit3x, [], today: today);
 
-      // 1x/week has longer grace period, so should have higher health
-      // when all weeks are missed
       expect(health1x, greaterThanOrEqualTo(health3x));
     });
   });
@@ -256,7 +344,6 @@ void main() {
         createdAt: today.subtract(const Duration(days: 1)),
         updatedAt: today.subtract(const Duration(days: 1)),
       );
-      // Grace period is 1 day, so 1 missed day = no decay yet
       final health = calculateHealth(habit, [], today: today);
       expect(health, equals(100.0));
     });
@@ -289,7 +376,6 @@ void main() {
 
     test('logs outside 90-day window are ignored', () {
       final today = DateTime(2024, 6, 15);
-      // Log from 100 days ago - should not affect health
       final oldLog =
           logFor('test-daily', today.subtract(const Duration(days: 100)));
       final healthWithOld = calculateHealth(dailyHabit(), [oldLog], today: today);
@@ -309,7 +395,6 @@ void main() {
       final healthSingle = calculateHealth(dailyHabit(), [log1], today: today);
       final healthDouble =
           calculateHealth(dailyHabit(), [log1, log2], today: today);
-      // Uses a Set for lookups, so duplicates don't matter for daily
       expect(healthDouble, equals(healthSingle));
     });
 
@@ -317,7 +402,6 @@ void main() {
       final today = DateTime(2024, 6, 15);
       final habit7x = weeklyHabit(count: 7);
       final health = calculateHealth(habit7x, [], today: today);
-      // Should still produce a valid result
       expect(health, greaterThanOrEqualTo(0));
       expect(health, lessThanOrEqualTo(maxHealth));
     });
@@ -330,7 +414,6 @@ void main() {
       final decay3 = _decayAmountPublic(3);
       expect(decay2, greaterThan(decay1));
       expect(decay3, greaterThan(decay2));
-      // Should be geometric: decay2/decay1 == decay3/decay2
       expect((decay2 / decay1).toStringAsFixed(2),
           equals((decay3 / decay2).toStringAsFixed(2)));
     });

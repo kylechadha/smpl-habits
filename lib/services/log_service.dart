@@ -21,27 +21,26 @@ class LogService {
         .map((snapshot) => snapshot.docs.map(Log.fromFirestore).toList());
   }
 
-  /// Toggle log for a specific habit and date (atomic transaction)
-  /// Returns true if log was created, false if deleted
+  /// Toggle log for a specific habit and date.
+  /// Uses direct get/set/delete instead of transaction so it works offline.
+  /// Returns true if log was created, false if deleted.
   Future<bool> toggleLog(String habitId, DateTime date) async {
     final dateStr = formatDateForStorage(date);
     final logId = Log.createId(habitId, dateStr);
     final docRef = _logsCollection.doc(logId);
 
-    return _firestore.runTransaction<bool>((transaction) async {
-      final doc = await transaction.get(docRef);
-      if (doc.exists) {
-        transaction.delete(docRef);
-        return false;
-      } else {
-        transaction.set(docRef, {
-          'habit_id': habitId,
-          'logged_date': dateStr,
-          'created_at': FieldValue.serverTimestamp(),
-        });
-        return true;
-      }
-    });
+    final doc = await docRef.get();
+    if (doc.exists) {
+      await docRef.delete();
+      return false;
+    } else {
+      await docRef.set({
+        'habit_id': habitId,
+        'logged_date': dateStr,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+      return true;
+    }
   }
 
 }
