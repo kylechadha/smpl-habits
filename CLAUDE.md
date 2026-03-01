@@ -58,8 +58,12 @@ flutter analyze                    # Lint check
 
 ### Emulator
 - AVD: `smpl_tracker_test` (Pixel 7, API 34, google_apis_playstore ARM64)
-- Boot: `emulator -avd smpl_tracker_test`
+- Boot: `emulator -avd smpl_tracker_test -no-audio`
 - Firebase project: `smpl-tracker` (under kylechadha@gmail.com)
+
+### Device Install
+- Prefer wireless ADB: `adb tcpip 5555 && adb connect <phone-ip>:5555`
+- Install: `adb install build/app/outputs/flutter-apk/app-release.apk`
 
 ### Firebase
 - Project ID: `smpl-tracker`
