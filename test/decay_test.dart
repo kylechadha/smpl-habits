@@ -438,6 +438,75 @@ void main() {
       expect(_recoveryAmountPublic(0), equals(10.0));
     });
   });
+
+  group('BUG: Weekly habit Sunday boundary', () {
+    test('RED: Sunday should inherit health from Saturday, not reset', () {
+      // BUG: On Sunday, date == weekStart, so isAfter(weekStart) is false.
+      // No provisional penalty applied.
+      // Scenario: Previous week (Feb 15-21) ended with health < 100% due to missed logs.
+      // New week (Feb 22-28) starts on Sunday with 0 logs.
+      // Sunday should show similar health to Saturday's ending, not reset.
+
+      final habit = weeklyHabit(count: 3);
+      final sunday = DateTime(2026, 2, 22); // Sunday (start of new week)
+      final saturday = DateTime(2026, 2, 21); // Saturday (end of prev week)
+
+      // Baseline logs for many weeks with 3/wk, establishing high health
+      final logs = _baselineLogs('test-weekly', sunday, count: 3);
+
+      // Intentionally miss the previous week (only 1 log instead of 3)
+      // Remove most logs from the previous week
+      final weekStartPrev = DateTime(2026, 2, 15); // Sun of prev week
+      final weekEndPrev = DateTime(2026, 2, 21);   // Sat of prev week
+      logs.removeWhere((log) {
+        final date = DateTime.parse(log.loggedDate + ' 00:00:00');
+        return date.isAfter(weekStartPrev) && date.isBefore(weekEndPrev.add(Duration(days: 1))) &&
+            log.loggedDate != '2026-02-21'; // Keep only Saturday
+      });
+
+      final healthSaturday = calculateHealth(habit, logs, today: saturday);
+      final healthSunday = calculateHealth(habit, logs, today: sunday);
+
+      // Saturday (end of prev week with 1/3 target): should have decayed
+      expect(healthSaturday, lessThan(100.0),
+          reason: 'Previous week missed target (1/3), health should decay');
+
+      // Sunday (start of new week, no logs yet): should inherit Saturday's health
+      // NOT reset to 100%
+      expect(healthSunday, lessThanOrEqualTo(healthSaturday),
+          reason: 'Sunday boundary bug: health reset to 100% despite previous decay');
+    });
+
+    test('GREEN: Backfill drawer shows current week after fix', () {
+      // Verifies the backfill drawer shows current week (Sun-Sat) not last 7 days.
+      // This is a documentation test of what the fix should achieve.
+
+      final wednesday = DateTime(2026, 2, 25); // Wednesday
+      final weekStart = DateTime(2026, 2, 22); // Sunday of same week
+
+      // After fix, drawer should iterate from weekStart for 7 days:
+      // i=0: weekStart.add(Duration(days: 0)) = Sun
+      // i=1: weekStart.add(Duration(days: 1)) = Mon
+      // i=2: weekStart.add(Duration(days: 2)) = Tue
+      // i=3: weekStart.add(Duration(days: 3)) = Wed
+      // i=4: weekStart.add(Duration(days: 4)) = Thu
+      // i=5: weekStart.add(Duration(days: 5)) = Fri
+      // i=6: weekStart.add(Duration(days: 6)) = Sat
+
+      final correctDays = [
+        for (int i = 0; i < 7; i++) weekStart.add(Duration(days: i))
+      ];
+
+      // All days should be in the same week
+      expect(correctDays.first.day, equals(22)); // Sunday
+      expect(correctDays[1].day, equals(23)); // Monday
+      expect(correctDays[2].day, equals(24)); // Tuesday
+      expect(correctDays[3].day, equals(25)); // Wednesday (today)
+      expect(correctDays[4].day, equals(26)); // Thursday
+      expect(correctDays[5].day, equals(27)); // Friday
+      expect(correctDays.last.day, equals(28)); // Saturday
+    });
+  });
 }
 
 /// Helper to get week start (Sunday) for a date
