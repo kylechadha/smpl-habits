@@ -439,6 +439,72 @@ void main() {
     });
   });
 
+  group('Real data: 7am Rise Mar 8-14', () {
+    test('trace 7am Rise health calculation for the week of Mar 8-14', () {
+      // Real data from Firestore:
+      // 7am Rise is 5x/weekly
+      // Previous tracking: Feb 17, 19, 25, 26, 27 (established healthy baseline)
+      // Current week (Mar 8-14): logs on Mar 9, Mar 12 only (2/5 target)
+
+      final habit = Habit(
+        id: 'NzYXlwTKJPLutrDFkj10',
+        name: '7am Rise',
+        frequencyType: 'weekly',
+        frequencyCount: 5,
+        sortOrder: 0,
+        createdAt: DateTime(2026, 2, 1),
+        updatedAt: DateTime(2026, 2, 1),
+      );
+
+      final logs = <Log>[];
+
+      // Add baseline logs from Feb to establish health
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 2, 17)));
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 2, 19)));
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 2, 25)));
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 2, 26)));
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 2, 27)));
+
+      // Add current week logs (Mar 8-14)
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 3, 9)));  // Monday
+      logs.add(logFor('NzYXlwTKJPLutrDFkj10', DateTime(2026, 3, 12))); // Thursday
+
+      // Calculate health on different days
+      final healthSun = calculateHealth(habit, logs, today: DateTime(2026, 3, 8));  // Sunday
+      final healthMon = calculateHealth(habit, logs, today: DateTime(2026, 3, 9));  // Monday (logged)
+      final healthWed = calculateHealth(habit, logs, today: DateTime(2026, 3, 11)); // Wednesday (0 logs so far)
+      final healthThu = calculateHealth(habit, logs, today: DateTime(2026, 3, 12)); // Thursday (logged)
+      final healthSat = calculateHealth(habit, logs, today: DateTime(2026, 3, 14)); // Saturday (end of week, 2/5 missed)
+
+      print('\n=== 7am Rise Health Calculation (Mar 8-14) ===');
+      print('Target: 5x/week');
+      print('Logs this week: Mar 9 (Mon), Mar 12 (Thu) = 2/5');
+      print('');
+      print('Sun Mar 8: ${healthSun.toStringAsFixed(1)}%');
+      print('Mon Mar 9: ${healthMon.toStringAsFixed(1)}%');
+      print('Wed Mar 11: ${healthWed.toStringAsFixed(1)}%');
+      print('Thu Mar 12: ${healthThu.toStringAsFixed(1)}%');
+      print('Sat Mar 14: ${healthSat.toStringAsFixed(1)}% (week evaluation, 2/5 target)');
+      print('');
+
+      // ISSUE FOUND: Sunday Mar 8 = 0%
+      // This might be the "reset" the user experienced
+      // On Mon (log): jumps to 100%
+      // Wed (no new log): drops slightly to 99.1%
+      // Thu (log): recovers to 99.4%
+      // Sat (week end, 2/5): settles to 98.3%
+
+      expect(healthSun, equals(0.0),
+          reason: 'Sunday has 0% health—this may be what user saw as "reset"');
+      expect(healthMon, equals(100.0),
+          reason: 'Monday logging brings health back to 100%');
+      expect(healthWed, lessThan(healthMon),
+          reason: 'Wednesday shows provisional mid-week decay');
+      expect(healthSat, lessThan(100.0),
+          reason: 'Saturday: week evaluation shows 2/5 target, health ~98%');
+    });
+  });
+
   group('BUG: Weekly habit Sunday boundary', () {
     test('RED: Sunday should inherit health from Saturday, not reset', () {
       // BUG: On Sunday, date == weekStart, so isAfter(weekStart) is false.
