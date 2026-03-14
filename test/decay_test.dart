@@ -572,6 +572,74 @@ void main() {
       expect(correctDays[5].day, equals(27)); // Friday
       expect(correctDays.last.day, equals(28)); // Saturday
     });
+
+    test('RED: Single log should not jump health from 0% to 100%', () {
+      // BUG: The real data shows health jumping from 0% (Sun Mar 8) to 100% (Mon Mar 9)
+      // with just one logged entry. This violates the spec that recovery mirrors decay
+      // (gradual, not instant).
+      //
+      // The issue: _recoveryAmount(0) = 5 * 2 = 10%, but then on Monday
+      // the mid-week recovery might be applying full recovery if logs >= frequencyCount
+      // somehow. Or there's an off-by-one error in log counting.
+
+      final habit = weeklyHabit(count: 5); // 5x/week
+      final sunday = DateTime(2026, 3, 8);
+      final monday = DateTime(2026, 3, 9);
+
+      // No baseline logs - health starts at 100 then decays to 0
+      final logs = <Log>[];
+      // Add just one log on Monday
+      logs.add(logFor('test-weekly', monday));
+
+      final healthSunday = calculateHealth(habit, logs, today: sunday);
+      final healthMonday = calculateHealth(habit, logs, today: monday);
+
+      print('\n[TEST] Single log health jump:');
+      print('  Sunday health: $healthSunday%');
+      print('  Monday health: $healthMonday%');
+      print('  Recovery: ${healthMonday - healthSunday}%');
+
+      // Sunday with 0 logs should be low (approaching 0 after 7+ days of grace + decay)
+      expect(healthSunday, lessThan(50.0),
+          reason: 'Without logs and grace period expired, health should be very low');
+
+      // Monday with 1 log out of 5 needed: should recover slowly, not jump to 100%
+      expect(healthMonday, lessThan(100.0),
+          reason: 'Single log out of 5 needed should recover only ~10%, not jump to 100%');
+
+      // Recovery should be roughly 10-15%, not 100%
+      final recovery = healthMonday - healthSunday;
+      expect(recovery, lessThan(20.0),
+          reason: 'Recovery from one log should be ~10%, not 100%');
+    });
+
+    test('RED: Health should not show 98% when only hitting 2/5 weekly target', () {
+      // BUG: Real data shows Sat Mar 14 at 98.3% health when only 2/5 logs were completed.
+      // This seems wrong—hitting 40% of target shouldn't give near-perfect health.
+      // The issue is likely that the baseline logs (Feb 17, 19, 25, 26, 27) establish
+      // health, but then the algorithm isn't penalizing missed weekly targets severely enough,
+      // or the mid-week provisional logic is too lenient.
+
+      final habit = weeklyHabit(count: 5); // 5x/week, need all 5 to meet target
+      final weekStart = DateTime(2026, 2, 22); // Sunday
+      final weekEnd = DateTime(2026, 2, 28);   // Saturday
+
+      // Generate baseline: enough weeks with perfect logs to establish high health
+      final logs = _baselineLogs('test-weekly', weekEnd, weeks: 13, count: 5);
+
+      // Current week (Feb 22-28): only 2 logs instead of 5 (40% of target)
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 23))); // Monday
+      logs.add(logFor('test-weekly', DateTime(2026, 2, 25))); // Wednesday
+
+      final healthOnSaturday = calculateHealth(habit, logs, today: weekEnd);
+
+      // Saturday at end of week: 2/5 target is a significant miss (60% short)
+      // Health should reflect this miss, not stay near-perfect
+      expect(healthOnSaturday, lessThan(90.0),
+          reason: 'Missing 60% of weekly target should lower health significantly below 90%');
+      expect(healthOnSaturday, greaterThan(50.0),
+          reason: 'But should still have some health from baseline weeks');
+    });
   });
 }
 
