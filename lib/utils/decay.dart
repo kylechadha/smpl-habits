@@ -26,11 +26,13 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
 
   for (int daysAgo = 89; daysAgo >= 0; daysAgo--) {
     final date = today.subtract(Duration(days: daysAgo));
+    // Normalize to midnight to avoid DST issues
+    final dateMidnightNorm = DateTime(date.year, date.month, date.day);
     // Skip days before the habit was created
-    if (date.isBefore(createdDay)) continue;
-    final dateStr = formatDateForStorage(date);
-    final wasLogged = loggedDates.contains(dateStr);
+    if (dateMidnightNorm.isBefore(createdDay)) continue;
+    final dateStr = formatDateForStorage(dateMidnightNorm);
 
+    final wasLogged = loggedDates.contains(dateStr);
     final daysSinceCreation = date.difference(createdDay).inDays;
 
     if (habit.isDaily) {
@@ -45,20 +47,28 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
       }
     } else {
       // Weekly habit: check at end of each week + mid-week provisional decay
-      final weekStart = getWeekStart(date);
-      final weekEnd = getWeekEnd(date);
+      final weekStart = getWeekStart(dateMidnightNorm);
+      final weekEnd = getWeekEnd(dateMidnightNorm);
 
-      if (date == weekEnd) {
+      // Normalize to calendar dates (ignoring time) for comparison
+      // This avoids DST bugs where subtract(Duration) can leave fractional hours
+      final weekEndMidnight = DateTime(weekEnd.year, weekEnd.month, weekEnd.day);
+      final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
+
+      if (dateMidnightNorm == weekEndMidnight) {
         // Completed week: evaluate fully
-        final weekStartStr = formatDateForStorage(weekStart);
-        final weekEndStr = formatDateForStorage(weekEnd);
+        final weekStartStr = formatDateForStorage(weekStartMidnight);
+        final weekEndStr = formatDateForStorage(weekEndMidnight);
         final weekLogs = logs.where((log) =>
             log.loggedDate.compareTo(weekStartStr) >= 0 &&
             log.loggedDate.compareTo(weekEndStr) <= 0).length;
 
         if (weekLogs >= habit.frequencyCount) {
           // Met target - recover (no bonus for extra logs)
-          health = min(maxHealth, health + _recoveryAmount(health));
+          // Only recover after grace period
+          if (daysSinceCreation > gracePeriod) {
+            health = min(maxHealth, health + _recoveryAmount(health));
+          }
           consecutiveMisses = 0;
         } else if (daysSinceCreation > gracePeriod) {
           // Missed target - decay based on how short
@@ -68,24 +78,28 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
             health = max(minHealth, health - _decayAmount(consecutiveMisses) * 0.5);
           }
         }
-      } else if (daysAgo == 0 && date.isAfter(weekStart)) {
-        // Current incomplete week: apply provisional mid-week penalty
-        final weekStartStr = formatDateForStorage(weekStart);
-        final todayStr = formatDateForStorage(date);
+      } else if (daysAgo == 0 && (dateMidnightNorm == weekStartMidnight || dateMidnightNorm.isAfter(weekStartMidnight))) {
+        // Current week (including Sunday): apply provisional mid-week penalty
+        // Fixed: now includes Sunday (when date == weekStart) to ensure health updates continuously
+        final weekStartStr = formatDateForStorage(weekStartMidnight);
+        final todayStr = formatDateForStorage(dateMidnightNorm);
         final weekLogs = logs.where((log) =>
             log.loggedDate.compareTo(weekStartStr) >= 0 &&
             log.loggedDate.compareTo(todayStr) <= 0).length;
 
         if (weekLogs >= habit.frequencyCount) {
           // Already met target mid-week - recover
-          health = min(maxHealth, health + _recoveryAmount(health));
+          // Only recover after grace period
+          if (daysSinceCreation > gracePeriod) {
+            health = min(maxHealth, health + _recoveryAmount(health));
+          }
           consecutiveMisses = 0;
         } else {
           // Behind pace: apply small provisional penalty
           // Expected logs by now, proportional to how far through the week
-          final daysElapsed = date.difference(weekStart).inDays + 1;
+          final daysElapsed = dateMidnightNorm.difference(weekStartMidnight).inDays + 1;
           final expectedLogs = habit.frequencyCount * daysElapsed / 7.0;
-          final shortfall = (expectedLogs - weekLogs).clamp(0.0, habit.frequencyCount.toDouble());
+          final shortfall = (expectedLogs - weekLogs);
 
           if (shortfall > 0) {
             // Penalty proportional to shortfall — higher frequency = more expected
