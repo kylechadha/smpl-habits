@@ -6,7 +6,7 @@ import 'date_utils.dart';
 /// Core parameters for health calculation
 const int gracePeriodDaily = 1;
 const double baseDecayRate = 5.0;
-const double decayAcceleration = 1.5;
+const double decayAcceleration = 1.1;  // Gentle acceleration: 10% increase per consecutive miss
 const double maxHealth = 100.0;
 const double minHealth = 0.0;
 
