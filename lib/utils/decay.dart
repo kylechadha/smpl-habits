@@ -10,6 +10,16 @@ const double decayAcceleration = 1.1;  // Gentle acceleration: 10% increase per 
 const double maxHealth = 100.0;
 const double minHealth = 0.0;
 
+/// Normalize a DateTime to midnight (strips time component)
+DateTime _toMidnight(DateTime date) => DateTime(date.year, date.month, date.day);
+
+/// Count logs within a date range (inclusive)
+int _countWeekLogs(List<Log> logs, String startDate, String endDate) {
+  return logs.where((log) =>
+      log.loggedDate.compareTo(startDate) >= 0 &&
+      log.loggedDate.compareTo(endDate) <= 0).length;
+}
+
 /// Calculate the current health for a habit based on its logs.
 /// [today] can be provided for testing; defaults to getCurrentDay().
 double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
@@ -19,7 +29,7 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
   double health = 100.0;
   today ??= getCurrentDay();
   final gracePeriod = habit.isDaily ? gracePeriodDaily : (7 / habit.frequencyCount).ceil();
-  final createdDay = DateTime(habit.createdAt.year, habit.createdAt.month, habit.createdAt.day);
+  final createdDay = _toMidnight(habit.createdAt);
 
   // Walk FORWARD through time (oldest to newest) over 90 days
   int consecutiveMisses = 0;
@@ -27,7 +37,7 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
   for (int daysAgo = 89; daysAgo >= 0; daysAgo--) {
     final date = today.subtract(Duration(days: daysAgo));
     // Normalize to midnight to avoid DST issues
-    final dateMidnightNorm = DateTime(date.year, date.month, date.day);
+    final dateMidnightNorm = _toMidnight(date);
     // Skip days before the habit was created
     if (dateMidnightNorm.isBefore(createdDay)) continue;
     final dateStr = formatDateForStorage(dateMidnightNorm);
@@ -52,16 +62,14 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
 
       // Normalize to calendar dates (ignoring time) for comparison
       // This avoids DST bugs where subtract(Duration) can leave fractional hours
-      final weekEndMidnight = DateTime(weekEnd.year, weekEnd.month, weekEnd.day);
-      final weekStartMidnight = DateTime(weekStart.year, weekStart.month, weekStart.day);
+      final weekEndMidnight = _toMidnight(weekEnd);
+      final weekStartMidnight = _toMidnight(weekStart);
 
       if (dateMidnightNorm == weekEndMidnight) {
         // Completed week: evaluate fully
         final weekStartStr = formatDateForStorage(weekStartMidnight);
         final weekEndStr = formatDateForStorage(weekEndMidnight);
-        final weekLogs = logs.where((log) =>
-            log.loggedDate.compareTo(weekStartStr) >= 0 &&
-            log.loggedDate.compareTo(weekEndStr) <= 0).length;
+        final weekLogs = _countWeekLogs(logs, weekStartStr, weekEndStr);
 
         if (weekLogs >= habit.frequencyCount) {
           // Met target - recover (no bonus for extra logs)
@@ -83,9 +91,7 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
         // Fixed: now includes Sunday (when date == weekStart) to ensure health updates continuously
         final weekStartStr = formatDateForStorage(weekStartMidnight);
         final todayStr = formatDateForStorage(dateMidnightNorm);
-        final weekLogs = logs.where((log) =>
-            log.loggedDate.compareTo(weekStartStr) >= 0 &&
-            log.loggedDate.compareTo(todayStr) <= 0).length;
+        final weekLogs = _countWeekLogs(logs, weekStartStr, todayStr);
 
         if (weekLogs >= habit.frequencyCount) {
           // Already met target mid-week - recover
