@@ -24,7 +24,10 @@ Personal use only. Opinionated design for a single user's workflow.
 ### Decay Model
 - **New habits start at 100%** with a grace period before decay begins
 - **Missing targets causes accelerating decay** (consecutive misses hurt more)
+  - Decay formula: 5% × 1.1^(misses-1) — gentle exponential escalation
+  - Weekly targets miss by multiple × decay each miss: 5% miss = 5×0.5% penalty
 - **Recovery mirrors decay** - consistent logging rebuilds health inversely
+  - Recovery formula: 5% × (1 + (100 - health)/100) — inverse to current health
 - **Can hit 0%** - fully neglected habits fail completely
 - **Overflow banking** - exceeding targets builds buffer against future decay AND displays above 100% (capped at 150%)
 
