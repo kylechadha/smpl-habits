@@ -94,43 +94,46 @@ flutter analyze                    # Lint check
 - **Frequencies**: Daily or X/week only (v1)
 - **Logging**: Binary (done/not done)
 
-## Debug Log - Mar 14, 2026
+## Debug Log - Mar 15, 2026
 
-### Issues Investigated
-1. **Backfill drawer missing Sunday** — FIXED
-   - Root cause: Loop showed last 7 calendar days instead of current week
-   - Fix: Changed to weekStart-based iteration
-   - Verified working on emulator
+### Critical Bugs Fixed (Decay Algorithm)
 
-2. **All habits resetting to 100% on Sunday** — NOT A BUG
-   - Expected behavior: Each week starts with health = 0% (fresh cycle)
-   - Logging immediately recovers health via inverse recovery formula
-   - Pattern is: Sun 0% → (log) → Mon 100% → (mid-week) → Wed 99% → Sat final eval
-   - This is designed behavior per algorithm
+1. **DST DateTime Bug** ✅ FIXED (commit 60edb1e)
+   - **Root cause**: `DateTime.subtract(Duration(days: N))` on DST boundaries leaves fractional hours
+   - **Example**: `DateTime(2026, 3, 9).subtract(Duration(days: 1))` = `2026-03-07 23:00:00` (not midnight)
+   - **Impact**: Date comparisons like `date == weekEnd` failed because time components didn't match
+   - **Consequence**: Saturday week evaluations never fired, health stayed at 100% instead of decaying
+   - **Fix**: Normalize all dates to midnight before comparison: `DateTime(date.year, date.month, date.day)`
+   - **Verified**: 48/48 unit tests passing, including DST edge cases
 
-3. **67% → 0% → 100% health swing** — ROOT CAUSE IDENTIFIED
-   - This is the Sunday→Monday week transition pattern
-   - Example from real data (7am Rise, 5x/weekly):
-     - Previous week ends with health > 0
-     - Sunday (new week): 0% (no logs in new week yet)
-     - Monday (log): 100% (recovery formula at low health)
-     - Throughout week: provisional decay applies if behind pace
-     - Saturday: final eval based on target completion (2/5 = 98%)
-   - Not a bug—this is the algorithm working as designed
+2. **Sunday Boundary Condition Bug** ✅ FIXED (commit 60edb1e)
+   - **Root cause**: Condition `date.isAfter(weekStart)` is false when `date == weekStart` (Sunday)
+   - **Impact**: Sunday excluded from mid-week provisional evaluation, allowed health to stay at invalid levels
+   - **Fix**: Changed to `(dateMidnightNorm == weekStartMidnight || dateMidnightNorm.isAfter(weekStartMidnight))`
+   - **Verified**: RED test "Sunday should not jump to 100% after missing previous week" now passing
 
-### Data Verified
-- **Account**: 100% kylechadha@gmail.com (Protein Shake: 23 logs over 4 weeks confirms single user)
-- **Firestore UID**: MUiQG6i8i3cMoyp7V6SQMwSO4023
-- **Tracking span**: Feb 17 - Mar 13 (4 weeks, 56 total logs)
-- **No data loss** across all tracked habits
+3. **Decay Too Steep** ✅ IMPROVED (commit b477fbf)
+   - **Issue**: `decayAcceleration = 1.5` caused ~33% health loss per missed week for 5x/week habits
+   - **User feedback**: "shouldn't go sharp from 67% to 0%, should be 10-20% loss per week"
+   - **Change**: `decayAcceleration = 1.1` → ~15% loss per missed week (gentle, exponential)
+   - **Formula effect**: Decay = 5% × 1.1^(misses-1) scales smoothly instead of sharply
 
-### Algorithm Clarification
-Weekly health cycle:
-- **Sunday (weekStart)**: Health = 0% (fresh week, no logs yet)
-- **Mon-Sat**: Logs trigger recovery (formula: 5% × (1 + (100 - health)/100))
-- **Thu-Sat**: If behind pace, provisional mid-week decay applies
-- **Saturday (weekEnd)**: Final evaluation — full recovery if target met, decay if missed
-- **Recovery is inverse to health**: Lower health = stronger recovery boost
-- **Decay accelerates**: Each consecutive miss increases decay rate (1.5x multiplier)
+### Backfill Drawer Fix (Previous Session)
+- ✅ FIXED: Drawer now shows Sunday-Saturday of current week (was missing Sunday)
+- Root cause: Loop showed last 7 calendar days instead of week boundaries
+- Commit: 92911cb
 
-This creates the pattern users observe but is working correctly per design.
+### Data & Testing
+- **No data loss**: All 56 logs across 4 weeks verified in Firestore
+- **Unit tests**: 48/48 passing, including 3 critical RED tests for the bugs
+- **Emulator verification**: App builds and displays correct health values (7am Rise 38%, not 0%/100%)
+- **Test coverage**: Grace periods, DST boundaries, weekly evals, mid-week decay, recovery formula all tested
+
+### Algorithm Behavior (Now Correct)
+Weekly cycle for 5x/week habit:
+- **Sunday (new week)**: Health = 0% (fresh slate, applies provisional penalty if no logs)
+- **Mon-Sat**: Logs trigger recovery; missed pace triggers gradual decay
+- **Sat (weekEnd)**: Final eval — recovery if ≥5 logs, decay if <5
+- **Recovery formula**: 5% × (1 + (100 - health)/100) — scales with deficit
+- **Decay formula**: 5% × 1.1^(misses-1) — gentle acceleration per consecutive miss
+- **No sharp jumps**: Smooth transitions, no health > 100% without extra logs
