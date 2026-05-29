@@ -70,6 +70,86 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
     }
   }
 
+  Future<void> _confirmResetScore() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Reset score?',
+          style: TextStyle(fontFamily: 'Inter',
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1A1A2E),
+          ),
+        ),
+        content: Text(
+          'Health will reset to 100%. Your log history will be kept.',
+          style: TextStyle(fontFamily: 'Inter',
+            fontSize: 15,
+            color: const Color(0xFF6B7280),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontFamily: 'Inter',
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'Reset',
+              style: TextStyle(fontFamily: 'Inter',
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFFF59E0B),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      try {
+        final habitService = ref.read(habitServiceProvider);
+        await habitService?.resetHealth(widget.habit.id);
+        if (mounted) Navigator.of(context).pop();
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to reset score')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _togglePause() async {
+    try {
+      final newPaused = !widget.habit.isPaused;
+      final habitService = ref.read(habitServiceProvider);
+      await habitService?.togglePause(widget.habit.id, isPaused: newPaused);
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to ${widget.habit.isPaused ? "resume" : "pause"} habit')),
+        );
+      }
+    }
+  }
+
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -179,13 +259,36 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
                       color: const Color(0xFF1A1A2E),
                     ),
                   ),
-                  IconButton(
-                    onPressed: _isLoading ? null : _confirmDelete,
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Color(0xFFEF4444),
-                      size: 26,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: _isLoading ? null : _togglePause,
+                        tooltip: widget.habit.isPaused ? 'Resume' : 'Pause',
+                        icon: Icon(
+                          widget.habit.isPaused ? Icons.play_arrow : Icons.pause,
+                          color: const Color(0xFF6B7280),
+                          size: 26,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _isLoading ? null : _confirmResetScore,
+                        tooltip: 'Reset score',
+                        icon: const Icon(
+                          Icons.refresh,
+                          color: Color(0xFFF59E0B),
+                          size: 26,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: _isLoading ? null : _confirmDelete,
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: Color(0xFFEF4444),
+                          size: 26,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

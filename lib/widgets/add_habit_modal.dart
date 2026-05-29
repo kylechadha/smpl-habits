@@ -13,8 +13,8 @@ class AddHabitModal extends ConsumerStatefulWidget {
 
 class _AddHabitModalState extends ConsumerState<AddHabitModal> {
   final _nameController = TextEditingController();
-  String _frequencyType = 'daily';
-  int _weeklyCount = 3;
+  String _frequencyType = 'weekly';
+  int _weeklyCount = 5;
   bool _isLoading = false;
 
   bool get _canSave =>

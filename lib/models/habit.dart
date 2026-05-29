@@ -9,6 +9,8 @@ class Habit {
   final int sortOrder;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final DateTime? healthResetAt; // When set, health calc starts from this date
+  final bool isPaused;
 
   Habit({
     required this.id,
@@ -18,12 +20,16 @@ class Habit {
     required this.sortOrder,
     required this.createdAt,
     required this.updatedAt,
+    this.healthResetAt,
+    this.isPaused = false,
   });
 
   bool get isDaily => frequencyType == 'daily';
   bool get isWeekly => frequencyType == 'weekly';
 
-  /// Create from Firestore document with null-safe parsing
+  /// The effective start date for health calculation
+  DateTime get healthStartDate => healthResetAt ?? createdAt;
+
   factory Habit.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data();
     if (data == null) throw StateError('Document ${doc.id} has no data');
@@ -35,6 +41,8 @@ class Habit {
       sortOrder: data['sort_order'] as int? ?? 0,
       createdAt: (data['created_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updated_at'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      healthResetAt: (data['health_reset_at'] as Timestamp?)?.toDate(),
+      isPaused: data['is_paused'] as bool? ?? false,
     );
   }
 

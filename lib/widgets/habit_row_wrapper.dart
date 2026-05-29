@@ -85,7 +85,7 @@ class _HabitRowWrapperState extends ConsumerState<HabitRowWrapper>
           weeklyLogsCount: weeklyLogsCount,
           health: health,
           onTap: () {
-            if (logService != null) {
+            if (logService != null && !widget.habit.isPaused) {
               final wasLogged = isLoggedToday;
               final newState = !wasLogged;
 

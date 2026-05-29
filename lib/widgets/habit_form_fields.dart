@@ -89,7 +89,6 @@ Widget buildFrequencyToggle({
       children: [
         Expanded(
           child: _buildFrequencyOption(
-            value: 'daily',
             label: 'Daily',
             isSelected: selectedType == 'daily',
             onTap: () => onChanged('daily'),
@@ -97,7 +96,6 @@ Widget buildFrequencyToggle({
         ),
         Expanded(
           child: _buildFrequencyOption(
-            value: 'weekly',
             label: 'Weekly',
             isSelected: selectedType == 'weekly',
             onTap: () => onChanged('weekly'),
@@ -109,7 +107,6 @@ Widget buildFrequencyToggle({
 }
 
 Widget _buildFrequencyOption({
-  required String value,
   required String label,
   required bool isSelected,
   required VoidCallback onTap,

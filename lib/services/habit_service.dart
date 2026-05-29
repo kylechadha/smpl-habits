@@ -28,9 +28,14 @@ class HabitService {
     required String frequencyType,
     required int frequencyCount,
   }) async {
-    // Get current count for sort_order
-    final snapshot = await _habitsCollection.get();
-    final sortOrder = snapshot.docs.length;
+    // Use max existing sort_order + 1 to avoid collisions after deletions
+    final snapshot = await _habitsCollection
+        .orderBy('sort_order', descending: true)
+        .limit(1)
+        .get();
+    final sortOrder = snapshot.docs.isEmpty
+        ? 0
+        : (snapshot.docs.first.data()['sort_order'] as int? ?? 0) + 1;
 
     final now = DateTime.now();
     final docRef = await _habitsCollection.add({
@@ -68,6 +73,27 @@ class HabitService {
     if (frequencyType != null) updates['frequency_type'] = frequencyType;
     if (frequencyCount != null) updates['frequency_count'] = frequencyCount;
 
+    await _habitsCollection.doc(habitId).update(updates);
+  }
+
+  /// Reset health score (sets healthResetAt to now, keeping all logs)
+  Future<void> resetHealth(String habitId) async {
+    await _habitsCollection.doc(habitId).update({
+      'health_reset_at': Timestamp.fromDate(DateTime.now()),
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Toggle pause state for a habit
+  Future<void> togglePause(String habitId, {required bool isPaused}) async {
+    final updates = <String, dynamic>{
+      'is_paused': isPaused,
+      'updated_at': FieldValue.serverTimestamp(),
+    };
+    // When unpausing, reset health so it starts fresh
+    if (!isPaused) {
+      updates['health_reset_at'] = Timestamp.fromDate(DateTime.now());
+    }
     await _habitsCollection.doc(habitId).update(updates);
   }
 

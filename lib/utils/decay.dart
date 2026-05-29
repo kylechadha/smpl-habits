@@ -23,13 +23,12 @@ int _countWeekLogs(List<Log> logs, String startDate, String endDate) {
 /// Calculate the current health for a habit based on its logs.
 /// [today] can be provided for testing; defaults to getCurrentDay().
 double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
-  // Create a set of logged dates for O(1) lookup
   final loggedDates = logs.map((l) => l.loggedDate).toSet();
 
   double health = 100.0;
   today ??= getCurrentDay();
   final gracePeriod = habit.isDaily ? gracePeriodDaily : (7 / habit.frequencyCount).ceil();
-  final createdDay = _toMidnight(habit.createdAt);
+  final createdDay = _toMidnight(habit.healthStartDate);
 
   // Walk FORWARD through time (oldest to newest) over 90 days
   int consecutiveMisses = 0;
@@ -43,7 +42,7 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
     final dateStr = formatDateForStorage(dateMidnightNorm);
 
     final wasLogged = loggedDates.contains(dateStr);
-    final daysSinceCreation = date.difference(createdDay).inDays;
+    final daysSinceCreation = dateMidnightNorm.difference(createdDay).inDays;
 
     if (habit.isDaily) {
       // Daily habit: check each day
@@ -100,16 +99,13 @@ double calculateHealth(Habit habit, List<Log> logs, {DateTime? today}) {
             health = min(maxHealth, health + _recoveryAmount(health));
           }
           consecutiveMisses = 0;
-        } else {
-          // Behind pace: apply small provisional penalty
-          // Expected logs by now, proportional to how far through the week
+        } else if (daysSinceCreation > gracePeriod) {
+          // Behind pace: apply small provisional penalty (only after grace period)
           final daysElapsed = dateMidnightNorm.difference(weekStartMidnight).inDays + 1;
           final expectedLogs = habit.frequencyCount * daysElapsed / 7.0;
           final shortfall = (expectedLogs - weekLogs);
 
           if (shortfall > 0) {
-            // Penalty proportional to shortfall — higher frequency = more expected
-            // = larger shortfall = more decay. Scaled gently (0.15x base rate).
             final penalty = shortfall * baseDecayRate * 0.15;
             health = max(minHealth, health - penalty);
           }

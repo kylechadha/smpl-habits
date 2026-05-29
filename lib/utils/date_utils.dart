@@ -31,5 +31,5 @@ DateTime getWeekStart(DateTime date) {
 /// Get the end of the current week (Saturday)
 DateTime getWeekEnd(DateTime date) {
   final weekStart = getWeekStart(date);
-  return weekStart.add(const Duration(days: 6));
+  return DateTime(weekStart.year, weekStart.month, weekStart.day + 6);
 }

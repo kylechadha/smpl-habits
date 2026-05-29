@@ -25,9 +25,7 @@ class BackfillDrawer extends ConsumerWidget {
       error: (e, s) => <String>{},
     );
 
-    // Show the current week (Sunday through Saturday)
-    final weekStart = getWeekStart(today);
-
+    // Show the last 7 days (today and 6 days before)
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
@@ -40,12 +38,12 @@ class BackfillDrawer extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              for (int i = 0; i < 7; i++)
+              for (int i = 6; i >= 0; i--)
                 _buildDayCheckbox(
-                  weekStart.add(Duration(days: i)),
+                  DateTime(today.year, today.month, today.day - i),
                   loggedDates,
                   logService,
-                  isToday: weekStart.add(Duration(days: i)) == today,
+                  isToday: i == 0,
                 ),
             ],
           ),

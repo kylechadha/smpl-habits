@@ -20,8 +20,8 @@ class HabitRow extends StatelessWidget {
     this.onLongPress,
   });
 
-  /// Subtle dimming for completed habits so incomplete ones stand out
-  double get _dimAlpha => isLoggedToday ? 0.5 : 1.0;
+  /// Subtle dimming for completed or paused habits
+  double get _dimAlpha => (isLoggedToday || habit.isPaused) ? 0.5 : 1.0;
 
   @override
   Widget build(BuildContext context) {
@@ -67,40 +67,74 @@ class HabitRow extends StatelessWidget {
                             ),
                     ),
                     Expanded(
-                      child: Text(
-                        habit.name,
-                        style: TextStyle(fontFamily: 'Inter',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color.fromRGBO(26, 26, 46, _dimAlpha),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              habit.name,
+                              style: TextStyle(fontFamily: 'Inter',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Color.fromRGBO(26, 26, 46, _dimAlpha),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (habit.isPaused) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF3F4F6),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'PAUSED',
+                                style: TextStyle(fontFamily: 'Inter',
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF9CA3AF),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    if (habit.isWeekly) _buildWeeklyPips(),
+                    if (habit.isWeekly && !habit.isPaused) _buildWeeklyPips(),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Opacity(
-                        opacity: _dimAlpha,
-                        child: _buildHealthBar(),
-                      ),
+                if (habit.isPaused)
+                  Text(
+                    'Paused — long press to resume',
+                    style: TextStyle(fontFamily: 'Inter',
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF9CA3AF),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      '${health.round()}%',
-                      style: TextStyle(fontFamily: 'Inter',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: _getHealthColor().withValues(alpha: _dimAlpha),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Opacity(
+                          opacity: _dimAlpha,
+                          child: _buildHealthBar(),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${health.round()}%',
+                        style: TextStyle(fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: _getHealthColor().withValues(alpha: _dimAlpha),
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
           ),
