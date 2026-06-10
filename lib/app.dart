@@ -5,6 +5,7 @@ import 'providers/auth_provider.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_screen.dart';
 
+/// Allows ADB touch input (PointerDeviceKind.unknown) to register in scrollables
 class _AppScrollBehavior extends MaterialScrollBehavior {
   @override
   Set<PointerDeviceKind> get dragDevices => {

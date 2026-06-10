@@ -15,6 +15,16 @@
 - [x] Security: Rotated leaked API key, scrubbed git history
 - [x] Drag to reorder habits
 - [x] Dead code removal and config cleanup
+- [x] Fix: new habit health at 97-99% (grace period on mid-week penalty)
+- [x] Fix: backfill drawer shows rolling 7 days (not week boundaries)
+- [x] Fix: sort order collisions after deletions
+- [x] Fix: DST bugs in daysSinceCreation and getWeekEnd
+- [x] Default new habit to weekly 5x/week
+- [x] Reset score (healthResetAt, keeps logs)
+- [x] Pause/unpause habit (isPaused, dimmed UI, swipe disabled)
+- [x] Drag handle (grip dots) decoupled from long-press edit
+- [x] Design polish (outline icons, 24px, touch targets, label contrast)
+- [x] 17 new unit tests (65 total)
 
 ## Icebox (v2+)
 - Dark mode

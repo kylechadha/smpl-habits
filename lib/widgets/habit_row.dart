@@ -48,15 +48,18 @@ class HabitRow extends StatelessWidget {
           onLongPress: onLongPress,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Column(
+            child: Row(
+              children: [
+                if (dragHandle != null) ...[
+                  dragHandle!,
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    if (dragHandle != null) ...[
-                      dragHandle!,
-                      const SizedBox(width: 4),
-                    ],
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       transitionBuilder: (child, animation) =>
@@ -140,6 +143,9 @@ class HabitRow extends StatelessWidget {
                       ),
                     ],
                   ),
+              ],
+            ),
+                ),
               ],
             ),
           ),

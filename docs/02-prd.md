@@ -139,6 +139,8 @@ Sideload APK or ADB install for v1. Play Store later if needed.
   sort_order: Int
   created_at: Timestamp
   updated_at: Timestamp
+  health_reset_at: Timestamp? (when set, health calc starts from this date)
+  is_paused: Boolean (default false, omits habit from health calculation)
 }
 ```
 

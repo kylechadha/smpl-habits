@@ -100,6 +100,52 @@ flutter analyze                    # Lint check
 - **Week start**: Sunday (health resets to 0% on Sunday for new weekly cycle)
 - **Frequencies**: Daily or X/week only (v1)
 - **Logging**: Binary (done/not done)
+- **Default new habit**: Weekly 5x/week (Mon-Fri pattern)
+- **Reset score**: Sets `healthResetAt` to now; algorithm skips days before that date, health restarts at 100%, logs kept
+- **Pause habit**: `isPaused` flag; health shows neutral, tap/swipe disabled, PAUSED badge shown; unpause resets health via `healthResetAt`
+- **Drag to reorder**: Explicit drag handle (grip dots) via `ReorderableDragStartListener`, long press opens edit modal
+- **Sort order**: `max(sort_order) + 1` on create (not `docs.length`) to avoid collisions after deletions
+- **Backfill drawer**: Rolling last 7 days (not week boundaries) so previous day is always accessible
+
+## Emulator Testing
+
+- AVD: `smpl_tracker_test` (Pixel 7, API 34, google_apis_playstore ARM64)
+- Package: `com.smpltracker.smpl_tracker` (launch: `adb shell am start -n com.smpltracker.smpl_tracker/.MainActivity`)
+- **ADB touch input**: Flutter rejects `PointerDeviceKind.unknown` from ADB by default. Fixed via `_AppScrollBehavior` in `app.dart`. Without this, only widgets outside scrollables (like FAB) respond to ADB taps.
+- **Coordinate offset**: ADB coordinates don't map 1:1 to screenshot pixels on this emulator. Use pointer overlay (`adb shell settings put system pointer_location 1`) to calibrate. The mapping varies by emulator session.
+- **Debug vs Release**: Debug APK triggers ANR dialogs on emulator due to frame drops. Use release APK for emulator QC.
+- **hw.keyboard**: Setting `hw.keyboard=yes` in AVD config breaks touch input. Keep it at `no`.
+
+## Debug Log - Jun 9, 2026
+
+### Features Added
+1. **Reset score** -- `healthResetAt` field on Habit; algorithm skips days before reset date
+2. **Pause/unpause habit** -- `isPaused` field; dimmed UI, PAUSED badge, tap/swipe disabled, unpause resets health
+3. **Drag-to-reorder** -- Explicit drag handle via `ReorderableDragStartListener`, decoupled from long-press edit
+4. **Default weekly 5x** -- New habits default to weekly frequency with 5 selected
+
+### Bugs Fixed
+1. **New habit health 97-99%** -- Provisional mid-week penalty missing grace period check (commit 3560176)
+2. **Backfill drawer missing previous day** -- Changed from week boundaries (Sun-Sat) to rolling last 7 days (commit 3560176)
+3. **Sort order collisions** -- `max(sort_order)+1` instead of `docs.length` (commit 3560176)
+4. **DST bug in daysSinceCreation** -- Used un-normalized `date` instead of `dateMidnightNorm` (commit 60dfd26)
+5. **getWeekEnd DST susceptibility** -- DateTime constructor instead of Duration addition (commit 60dfd26)
+6. **Paused habit swipe loophole** -- Slidable disabled when paused to prevent backfill logging
+
+### Test Coverage: 65 tests (17 new)
+- Grace period on mid-week penalty (4 tests)
+- healthResetAt reset score (3 tests)
+- healthStartDate getter (3 tests)
+- getWeekEnd/getWeekStart DST safety (3 tests)
+- Rolling 7-day date math (4 tests: month boundary, DST, year boundary, leap year)
+
+### Quality Agent Reviews
+- **Code reviewer**: Found paused-habit-swipe loophole (fixed)
+- **Architect**: Suggested renaming `healthResetAt` to `healthEpoch` (deferred, getter `healthStartDate` is clear enough)
+- **Security**: Low risk, no issues for single-user app
+- **Design**: Normalized icon sizes to 24px, outline style, improved touch targets and label contrast
+
+---
 
 ## Debug Log - Mar 15, 2026
 

@@ -14,22 +14,43 @@ Checklist for v1 MVP verification.
 - [ ] Re-sign in restores all data
 
 ### Habit CRUD
+- [ ] Create habit - defaults to weekly 5x
 - [ ] Create daily habit - appears in list
 - [ ] Create weekly habit (3x/week) - shows pips
 - [ ] Edit habit name - updates immediately
 - [ ] Edit habit frequency - updates display
 - [ ] Delete habit - removed from list
 - [ ] Delete confirmation dialog appears
-- [ ] Reorder habits via drag - persists
+- [ ] Reorder habits via drag handle (grip dots) - persists
+- [ ] New habit appears at bottom of list
+- [ ] Long press opens edit modal (doesn't conflict with drag)
+
+### Reset Score
+- [ ] Long press habit → tap reset icon (↻ yellow) → confirmation dialog
+- [ ] Dialog shows "Health will reset to 100%. Your log history will be kept."
+- [ ] Cancel dismisses dialog
+- [ ] Reset → health shows 100%, logs still visible in backfill drawer
+- [ ] After reset, decay starts fresh from reset date
+
+### Pause / Unpause
+- [ ] Long press habit → tap pause icon (⏸) → habit shows PAUSED badge
+- [ ] Paused habit: dimmed, no health bar, shows "Paused - long press to resume"
+- [ ] Paused habit: tap does nothing (no log toggle)
+- [ ] Paused habit: swipe does nothing (no backfill drawer)
+- [ ] Paused habit: weekly pips hidden
+- [ ] Long press paused habit → tap play icon (▶) → habit resumes
+- [ ] Resumed habit: health resets to 100%
 
 ### Logging
 - [ ] Tap habit - toggles today's log
 - [ ] Checkmark appears/disappears with animation
 - [ ] Health percentage updates on log
-- [ ] Swipe left - reveals 7-day drawer
+- [ ] Swipe left - reveals rolling 7-day drawer (last 7 days, not week boundaries)
+- [ ] Drawer shows today highlighted (brighter label)
 - [ ] Tap day in drawer - toggles that day's log
 - [ ] Close drawer - returns to normal view
 - [ ] Backfill past day - health updates
+- [ ] On Sunday, previous Saturday is visible in drawer
 
 ### Health Display
 - [ ] New habit starts at 100% (green)

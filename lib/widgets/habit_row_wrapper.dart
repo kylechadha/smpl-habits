@@ -64,6 +64,7 @@ class _HabitRowWrapperState extends ConsumerState<HabitRowWrapper>
 
     return Slidable(
       key: ValueKey(widget.habit.id),
+      enabled: !widget.habit.isPaused,
       endActionPane: ActionPane(
         motion: const BehindMotion(),
         extentRatio: 1.0,
