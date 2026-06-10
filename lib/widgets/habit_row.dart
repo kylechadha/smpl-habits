@@ -47,12 +47,16 @@ class HabitRow extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.only(left: 12, right: 16, top: 14, bottom: 14),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 if (dragHandle != null) ...[
-                  dragHandle!,
-                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 44,
+                    child: Center(child: dragHandle!),
+                  ),
+                  const SizedBox(width: 4),
                 ],
                 Expanded(
                   child: Column(

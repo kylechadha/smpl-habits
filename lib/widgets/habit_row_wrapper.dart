@@ -89,10 +89,24 @@ class _HabitRowWrapperState extends ConsumerState<HabitRowWrapper>
           health: health,
           dragHandle: ReorderableDragStartListener(
             index: widget.dragIndex,
-            child: Icon(
-              Icons.drag_indicator,
-              color: const Color(0xFFD1D5DB),
-              size: 20,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int row = 0; row < 3; row++) ...[
+                    if (row > 0) const SizedBox(height: 6),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildDot(),
+                        const SizedBox(width: 4),
+                        _buildDot(),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
           onTap: () {
@@ -124,6 +138,17 @@ class _HabitRowWrapperState extends ConsumerState<HabitRowWrapper>
           },
           onLongPress: widget.onLongPress,
         ),
+      ),
+    );
+  }
+
+  static Widget _buildDot() {
+    return Container(
+      width: 3.5,
+      height: 3.5,
+      decoration: BoxDecoration(
+        color: const Color(0xFFD0D5DD),
+        borderRadius: BorderRadius.circular(1.75),
       ),
     );
   }
