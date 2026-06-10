@@ -64,7 +64,9 @@ class BackfillDrawer extends ConsumerWidget {
 
     return GestureDetector(
       onTap: () => logService?.toggleLog(habitId, date),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
@@ -74,7 +76,7 @@ class BackfillDrawer extends ConsumerWidget {
               fontWeight: FontWeight.w600,
               color: isToday
                   ? Colors.white
-                  : Colors.white.withValues(alpha: 0.35),
+                  : Colors.white.withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 6),
@@ -104,6 +106,7 @@ class BackfillDrawer extends ConsumerWidget {
                 : null,
           ),
         ],
+      ),
       ),
     );
   }

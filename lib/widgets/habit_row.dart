@@ -9,6 +9,7 @@ class HabitRow extends StatelessWidget {
   final double health;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final Widget? dragHandle;
 
   const HabitRow({
     super.key,
@@ -18,6 +19,7 @@ class HabitRow extends StatelessWidget {
     required this.health,
     required this.onTap,
     this.onLongPress,
+    this.dragHandle,
   });
 
   /// Subtle dimming for completed or paused habits
@@ -51,7 +53,10 @@ class HabitRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Animated checkmark indicator
+                    if (dragHandle != null) ...[
+                      dragHandle!,
+                      const SizedBox(width: 4),
+                    ],
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       transitionBuilder: (child, animation) =>
@@ -84,7 +89,7 @@ class HabitRow extends StatelessWidget {
                           if (habit.isPaused) ...[
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF3F4F6),
                                 borderRadius: BorderRadius.circular(4),
@@ -92,7 +97,7 @@ class HabitRow extends StatelessWidget {
                               child: Text(
                                 'PAUSED',
                                 style: TextStyle(fontFamily: 'Inter',
-                                  fontSize: 9,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: const Color(0xFF9CA3AF),
                                 ),

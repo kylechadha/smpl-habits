@@ -12,11 +12,13 @@ import 'backfill_drawer.dart';
 /// Wrapper that provides log state to HabitRow with slidable backfill drawer
 class HabitRowWrapper extends ConsumerStatefulWidget {
   final Habit habit;
+  final int dragIndex;
   final VoidCallback? onLongPress;
 
   const HabitRowWrapper({
     super.key,
     required this.habit,
+    required this.dragIndex,
     this.onLongPress,
   });
 
@@ -84,6 +86,14 @@ class _HabitRowWrapperState extends ConsumerState<HabitRowWrapper>
           isLoggedToday: isLoggedToday,
           weeklyLogsCount: weeklyLogsCount,
           health: health,
+          dragHandle: ReorderableDragStartListener(
+            index: widget.dragIndex,
+            child: Icon(
+              Icons.drag_indicator,
+              color: const Color(0xFFD1D5DB),
+              size: 20,
+            ),
+          ),
           onTap: () {
             if (logService != null && !widget.habit.isPaused) {
               final wasLogged = isLoggedToday;

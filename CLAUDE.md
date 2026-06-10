@@ -72,6 +72,13 @@ flutter analyze                    # Lint check
 - Firestore security rules: user-scoped read/write
 - **Note**: Firebase project ID, Android package (`com.kylechadha.smpl_tracker`), and Dart package remain `smpl_tracker` — renaming would break Firebase config, signing, and Play Store identity. Only the GitHub repo and docs use `smpl-habits`.
 
+## Testing
+
+- **Red/Green/Red workflow**: Before changing behavior, ensure existing tests cover it. Change code → old test fails (red). Write/update tests for new behavior → tests pass (green). This confirms both that the old behavior was captured and the new behavior is correct.
+- **Every change needs a test**: Bug fixes get a regression test. Features get unit tests for the core logic. No shipping code changes without corresponding test changes.
+- **Test the algorithm, not the widget**: Decay/health logic is pure functions — test with unit tests. Widget layout is verified on emulator.
+- Run `flutter test` before every commit.
+
 ## Git Workflow
 
 - Single `main` branch (solo project, no PRs needed)

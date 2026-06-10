@@ -266,26 +266,27 @@ class _EditHabitModalState extends ConsumerState<EditHabitModal> {
                         onPressed: _isLoading ? null : _togglePause,
                         tooltip: widget.habit.isPaused ? 'Resume' : 'Pause',
                         icon: Icon(
-                          widget.habit.isPaused ? Icons.play_arrow : Icons.pause,
+                          widget.habit.isPaused ? Icons.play_circle_outline : Icons.pause_circle_outline,
                           color: const Color(0xFF6B7280),
-                          size: 26,
+                          size: 24,
                         ),
                       ),
                       IconButton(
                         onPressed: _isLoading ? null : _confirmResetScore,
                         tooltip: 'Reset score',
                         icon: const Icon(
-                          Icons.refresh,
+                          Icons.restart_alt,
                           color: Color(0xFFF59E0B),
-                          size: 26,
+                          size: 24,
                         ),
                       ),
                       IconButton(
                         onPressed: _isLoading ? null : _confirmDelete,
+                        tooltip: 'Delete',
                         icon: const Icon(
                           Icons.delete_outline,
                           color: Color(0xFFEF4444),
-                          size: 26,
+                          size: 24,
                         ),
                       ),
                     ],

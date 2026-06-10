@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smpl_tracker/models/habit.dart';
 import 'package:smpl_tracker/models/log.dart';
+import 'package:smpl_tracker/utils/date_utils.dart';
 import 'package:smpl_tracker/utils/decay.dart';
 
 /// Helper to create a daily habit for testing
@@ -641,6 +642,403 @@ void main() {
           reason: 'Missing 60% of weekly target should lower health from perfect');
       expect(healthOnSaturday, greaterThan(80.0),
           reason: 'But should retain most health from baseline weeks of consistent tracking');
+    });
+  });
+
+  group('v2: Bug fixes and features', () {
+    // ---------------------------------------------------------------
+    // 1. Grace period on provisional mid-week penalty
+    //
+    // A brand-new weekly habit should start at 100% during its grace
+    // period. Grace = ceil(7 / frequencyCount). For 5x/week that's 2
+    // days. Mid-week provisional penalty must NOT apply during grace.
+    // ---------------------------------------------------------------
+
+    test('new 5x/week habit has 100% health on creation day (grace period)', () {
+      final today = DateTime(2026, 5, 20); // Wednesday
+      final habit = Habit(
+        id: 'grace-test',
+        name: 'Meditate',
+        frequencyType: 'weekly',
+        frequencyCount: 5,
+        sortOrder: 0,
+        createdAt: today,
+        updatedAt: today,
+      );
+
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, equals(100.0),
+          reason: 'Brand-new habit should be 100% on day 0 (inside grace period)');
+    });
+
+    test('new 5x/week habit stays at 100% on day 1 (still in grace period)', () {
+      // Grace for 5x/week = ceil(7/5) = 2 days
+      final created = DateTime(2026, 5, 20); // Wednesday
+      final today = DateTime(2026, 5, 21);   // Thursday (day 1 since creation)
+      final habit = Habit(
+        id: 'grace-test',
+        name: 'Meditate',
+        frequencyType: 'weekly',
+        frequencyCount: 5,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+      );
+
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, equals(100.0),
+          reason: 'Day 1 is still within grace period of 2 days for 5x/week');
+    });
+
+    test('new 5x/week habit decays after grace period expires', () {
+      // Grace = 2 days, so day 3+ should start decaying
+      final created = DateTime(2026, 5, 18); // Monday
+      final today = DateTime(2026, 5, 23);   // Saturday (5 days since creation)
+      final habit = Habit(
+        id: 'grace-test',
+        name: 'Meditate',
+        frequencyType: 'weekly',
+        frequencyCount: 5,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+      );
+
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, lessThan(100.0),
+          reason: 'After grace period (2 days), decay should apply for 0 logs');
+    });
+
+    test('new 3x/week habit has longer grace period than 5x/week', () {
+      // Grace for 3x/week = ceil(7/3) = 3 days
+      // Grace for 5x/week = ceil(7/5) = 2 days
+      final created = DateTime(2026, 5, 18); // Monday
+      final today = DateTime(2026, 5, 21);   // Thursday (3 days since creation)
+      final habit3x = Habit(
+        id: 'grace-3x',
+        name: 'Read',
+        frequencyType: 'weekly',
+        frequencyCount: 3,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+      );
+      final habit5x = Habit(
+        id: 'grace-5x',
+        name: 'Meditate',
+        frequencyType: 'weekly',
+        frequencyCount: 5,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+      );
+
+      final health3x = calculateHealth(habit3x, [], today: today);
+      final health5x = calculateHealth(habit5x, [], today: today);
+
+      // 3x is still in grace (3 days grace, 3 days elapsed)
+      // 5x has exceeded grace (2 days grace, 3 days elapsed)
+      expect(health3x, greaterThanOrEqualTo(health5x),
+          reason: '3x/week has a longer grace period than 5x/week');
+    });
+
+    // ---------------------------------------------------------------
+    // 2. healthResetAt (reset score)
+    //
+    // When healthResetAt is set, the decay algorithm uses it as the
+    // start date instead of createdAt. This effectively resets health
+    // to 100% by making the algorithm think the habit is brand new.
+    // ---------------------------------------------------------------
+
+    test('healthResetAt resets health to 100% regardless of old logs', () {
+      final today = DateTime(2026, 5, 28);
+      final createdAt = DateTime(2026, 4, 1); // 57 days ago
+
+      // Habit WITHOUT reset: old, decayed health
+      final habitNoReset = Habit(
+        id: 'reset-test',
+        name: 'Journal',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      );
+
+      // Sparse logs: only a few across 57 days
+      final logs = [
+        logFor('reset-test', DateTime(2026, 4, 5)),
+        logFor('reset-test', DateTime(2026, 4, 12)),
+        logFor('reset-test', DateTime(2026, 4, 20)),
+        logFor('reset-test', DateTime(2026, 5, 1)),
+      ];
+
+      final healthDecayed = calculateHealth(habitNoReset, logs, today: today);
+      expect(healthDecayed, lessThan(100.0),
+          reason: 'Old habit with sparse logs should have decayed health');
+
+      // Same habit WITH healthResetAt = today: should be 100%
+      final habitWithReset = Habit(
+        id: 'reset-test',
+        name: 'Journal',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+        healthResetAt: today,
+      );
+
+      final healthReset = calculateHealth(habitWithReset, logs, today: today);
+      expect(healthReset, equals(100.0),
+          reason: 'healthResetAt = today makes habit look brand new, health = 100%');
+    });
+
+    test('healthResetAt ignores logs before the reset date', () {
+      final today = DateTime(2026, 5, 28);
+      final resetDate = DateTime(2026, 5, 25); // 3 days ago
+
+      final habit = Habit(
+        id: 'reset-test-2',
+        name: 'Stretch',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: DateTime(2026, 3, 1),
+        updatedAt: DateTime(2026, 3, 1),
+        healthResetAt: resetDate,
+      );
+
+      // Logs only before the reset date (should be irrelevant since
+      // algorithm skips days before healthStartDate)
+      final oldLogs = [
+        logFor('reset-test-2', DateTime(2026, 4, 1)),
+        logFor('reset-test-2', DateTime(2026, 4, 15)),
+        logFor('reset-test-2', DateTime(2026, 5, 10)),
+      ];
+
+      // Logs after reset
+      final newLogs = [
+        logFor('reset-test-2', DateTime(2026, 5, 26)),
+        logFor('reset-test-2', DateTime(2026, 5, 27)),
+        logFor('reset-test-2', DateTime(2026, 5, 28)),
+      ];
+
+      final healthOldOnly = calculateHealth(habit, oldLogs, today: today);
+      final healthNewOnly = calculateHealth(habit, newLogs, today: today);
+
+      // Old logs before reset date don't help — algorithm starts from resetDate
+      // New logs after reset date DO help
+      expect(healthNewOnly, greaterThan(healthOldOnly),
+          reason: 'Only logs after healthResetAt should contribute to health');
+    });
+
+    // ---------------------------------------------------------------
+    // 3. healthStartDate getter
+    //
+    // Verify the Habit model's healthStartDate returns healthResetAt
+    // when set, otherwise falls back to createdAt. This drives the
+    // decay algorithm's start date.
+    // ---------------------------------------------------------------
+
+    test('healthStartDate returns createdAt when healthResetAt is null', () {
+      final created = DateTime(2026, 3, 15);
+      final habit = Habit(
+        id: 'start-date-test',
+        name: 'Walk',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+      );
+
+      expect(habit.healthStartDate, equals(created));
+    });
+
+    test('healthStartDate returns healthResetAt when set', () {
+      final created = DateTime(2026, 3, 15);
+      final resetAt = DateTime(2026, 5, 1);
+      final habit = Habit(
+        id: 'start-date-test',
+        name: 'Walk',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: created,
+        updatedAt: created,
+        healthResetAt: resetAt,
+      );
+
+      expect(habit.healthStartDate, equals(resetAt));
+      expect(habit.healthStartDate, isNot(equals(created)));
+    });
+
+    test('decay algorithm uses healthStartDate (not createdAt) for reset habits', () {
+      // Create a habit that's been around for weeks, but reset recently.
+      // The algorithm should treat it as "new" from healthResetAt.
+      final today = DateTime(2026, 5, 28);
+      final resetAt = DateTime(2026, 5, 27); // yesterday
+
+      final habit = Habit(
+        id: 'start-date-calc',
+        name: 'Yoga',
+        frequencyType: 'daily',
+        frequencyCount: 1,
+        sortOrder: 0,
+        createdAt: DateTime(2026, 1, 1), // very old
+        updatedAt: DateTime(2026, 1, 1),
+        healthResetAt: resetAt,
+      );
+
+      // No logs at all — but health should be 100% because grace period
+      // applies from healthResetAt (yesterday), not createdAt (Jan 1)
+      final health = calculateHealth(habit, [], today: today);
+      expect(health, equals(100.0),
+          reason: 'Grace period applies from healthResetAt, not createdAt');
+    });
+
+    // ---------------------------------------------------------------
+    // 4. getWeekEnd DST safety
+    //
+    // getWeekEnd uses the DateTime constructor (not Duration subtraction)
+    // to compute Saturday. Verify it returns midnight Saturday even when
+    // DST spring-forward occurs during the week (March 8, 2026 is a
+    // Sunday and US DST transitions that day).
+    // ---------------------------------------------------------------
+
+    test('getWeekEnd returns midnight Saturday across DST spring-forward', () {
+      // March 8, 2026 (Sunday) = US DST spring-forward
+      // Week: Sun Mar 8 - Sat Mar 14
+      final dstSunday = DateTime(2026, 3, 8);
+      final weekEnd = getWeekEnd(dstSunday);
+
+      // Should be Saturday March 14 at midnight (hour=0, minute=0)
+      expect(weekEnd.year, equals(2026));
+      expect(weekEnd.month, equals(3));
+      expect(weekEnd.day, equals(14));
+      expect(weekEnd.hour, equals(0),
+          reason: 'getWeekEnd should return midnight, not 23:00 from DST shift');
+      expect(weekEnd.minute, equals(0));
+    });
+
+    test('getWeekEnd returns midnight Saturday during DST fall-back', () {
+      // November 1, 2026 (Sunday) = US DST fall-back
+      // Week: Sun Nov 1 - Sat Nov 7
+      final fallBackSunday = DateTime(2026, 11, 1);
+      final weekEnd = getWeekEnd(fallBackSunday);
+
+      expect(weekEnd.year, equals(2026));
+      expect(weekEnd.month, equals(11));
+      expect(weekEnd.day, equals(7));
+      expect(weekEnd.hour, equals(0),
+          reason: 'getWeekEnd should return midnight even during fall-back');
+    });
+
+    test('getWeekStart returns midnight Sunday across DST boundary', () {
+      // Query from mid-week during DST week
+      final dstWednesday = DateTime(2026, 3, 11); // Wed in DST week
+      final weekStart = getWeekStart(dstWednesday);
+
+      expect(weekStart.year, equals(2026));
+      expect(weekStart.month, equals(3));
+      expect(weekStart.day, equals(8)); // Sunday
+      expect(weekStart.hour, equals(0));
+    });
+
+    // ---------------------------------------------------------------
+    // 5. Backfill drawer rolling 7 days (pure date math)
+    //
+    // The DateTime constructor approach `DateTime(y, m, d - i)` handles
+    // month boundaries and DST correctly because Dart's DateTime
+    // constructor normalizes (e.g., day=0 becomes last day of prev month).
+    // This is safer than Duration(days: i) which can drift on DST.
+    // ---------------------------------------------------------------
+
+    test('rolling 7 days handles month boundary correctly', () {
+      // March 2, 2026 (Monday) — rolling back 7 days crosses into February
+      final today = DateTime(2026, 3, 2);
+      final days = List.generate(7, (i) =>
+          DateTime(today.year, today.month, today.day - i));
+
+      // day 0 = Mar 2, day 1 = Mar 1, day 2 = Feb 28, ...
+      expect(days[0], equals(DateTime(2026, 3, 2)));
+      expect(days[1], equals(DateTime(2026, 3, 1)));
+      expect(days[2], equals(DateTime(2026, 2, 28)));
+      expect(days[3], equals(DateTime(2026, 2, 27)));
+      expect(days[4], equals(DateTime(2026, 2, 26)));
+      expect(days[5], equals(DateTime(2026, 2, 25)));
+      expect(days[6], equals(DateTime(2026, 2, 24)));
+    });
+
+    test('rolling 7 days handles DST spring-forward correctly', () {
+      // March 9, 2026 (Monday, day after DST spring-forward on Mar 8)
+      final today = DateTime(2026, 3, 9);
+      final days = List.generate(7, (i) =>
+          DateTime(today.year, today.month, today.day - i));
+
+      // All dates should be at midnight (hour = 0) regardless of DST
+      for (final day in days) {
+        expect(day.hour, equals(0),
+            reason: 'DateTime constructor should produce midnight, not DST-shifted time');
+      }
+
+      // Verify the actual dates
+      expect(days[0].day, equals(9));  // Mon Mar 9
+      expect(days[1].day, equals(8));  // Sun Mar 8 (DST day)
+      expect(days[2].day, equals(7));  // Sat Mar 7
+      expect(days[3].day, equals(6));  // Fri Mar 6
+      expect(days[4].day, equals(5));  // Thu Mar 5
+      expect(days[5].day, equals(4));  // Wed Mar 4
+      expect(days[6].day, equals(3));  // Tue Mar 3
+    });
+
+    test('rolling 7 days handles year boundary correctly', () {
+      // January 2, 2026 (Friday) — rolling back crosses into December 2025
+      final today = DateTime(2026, 1, 2);
+      final days = List.generate(7, (i) =>
+          DateTime(today.year, today.month, today.day - i));
+
+      expect(days[0], equals(DateTime(2026, 1, 2)));
+      expect(days[1], equals(DateTime(2026, 1, 1)));
+      expect(days[2], equals(DateTime(2025, 12, 31)));
+      expect(days[3], equals(DateTime(2025, 12, 30)));
+      expect(days[4], equals(DateTime(2025, 12, 29)));
+      expect(days[5], equals(DateTime(2025, 12, 28)));
+      expect(days[6], equals(DateTime(2025, 12, 27)));
+    });
+
+    test('rolling 7 days handles leap year February correctly', () {
+      // March 1, 2024 (leap year) — rolling back into Feb should hit Feb 29
+      final today = DateTime(2024, 3, 1);
+      final days = List.generate(7, (i) =>
+          DateTime(today.year, today.month, today.day - i));
+
+      expect(days[0], equals(DateTime(2024, 3, 1)));
+      expect(days[1], equals(DateTime(2024, 2, 29))); // Leap day
+      expect(days[2], equals(DateTime(2024, 2, 28)));
+      expect(days[3], equals(DateTime(2024, 2, 27)));
+      expect(days[4], equals(DateTime(2024, 2, 26)));
+      expect(days[5], equals(DateTime(2024, 2, 25)));
+      expect(days[6], equals(DateTime(2024, 2, 24)));
+    });
+
+    test('Duration(days: i) can produce non-midnight times near DST but DateTime constructor does not', () {
+      // This demonstrates WHY we use DateTime(y, m, d-i) instead of subtract(Duration)
+      // On DST spring-forward (Mar 8, 2026), Duration subtraction can leave 23:00
+      final dstDay = DateTime(2026, 3, 9); // Day after DST
+      final viaDuration = dstDay.subtract(const Duration(days: 1));
+      final viaConstructor = DateTime(dstDay.year, dstDay.month, dstDay.day - 1);
+
+      // Constructor always gives midnight
+      expect(viaConstructor.hour, equals(0));
+      expect(viaConstructor.day, equals(8));
+
+      // Duration may or may not give midnight depending on platform DST handling.
+      // The key point: constructor is ALWAYS safe.
+      // We don't assert viaDuration.hour != 0 because behavior is platform-dependent,
+      // but we assert the constructor approach is always correct.
+      expect(viaConstructor, equals(DateTime(2026, 3, 8)));
     });
   });
 }

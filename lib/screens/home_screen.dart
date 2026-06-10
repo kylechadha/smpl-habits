@@ -162,6 +162,7 @@ class HomeScreen extends ConsumerWidget {
   Widget _buildHabitList(BuildContext context, WidgetRef ref, List<Habit> habits) {
     return ReorderableListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 100),
+      buildDefaultDragHandles: false,
       itemCount: habits.length,
       proxyDecorator: (child, index, animation) {
         return AnimatedBuilder(
@@ -189,6 +190,7 @@ class HomeScreen extends ConsumerWidget {
         return HabitRowWrapper(
           key: ValueKey(habit.id),
           habit: habit,
+          dragIndex: index,
           onLongPress: () => showEditHabitModal(context, habit),
         );
       },
