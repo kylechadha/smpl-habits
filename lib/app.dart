@@ -1,8 +1,17 @@
+import 'dart:ui' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/auth_provider.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_screen.dart';
+
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    ...super.dragDevices,
+    PointerDeviceKind.unknown,
+  };
+}
 
 class SmplTrackerApp extends ConsumerWidget {
   const SmplTrackerApp({super.key});
@@ -14,6 +23,7 @@ class SmplTrackerApp extends ConsumerWidget {
     return MaterialApp(
       title: 'smpl tracker',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: _AppScrollBehavior(),
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
